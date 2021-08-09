@@ -1,6 +1,5 @@
 #lang scribble/manual
-@require[@for-label[k
-                    racket/base]]
+@require[@for-label[k]]
 
 @title{k}
 @author{linzizhuan}
