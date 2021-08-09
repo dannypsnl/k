@@ -9,4 +9,6 @@ The following commands might be helpful for your development
 ```shell
 # install pkg k itself
 raco pkg install --auto
+# apply git config of the project
+git config commit.template $(pwd)/.gitmessage
 ```
