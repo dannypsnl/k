@@ -24,7 +24,7 @@
     (pattern [name:id : typ:type]
              #:attr value #'(telescope 'name typ.value)
              #:attr define #'(define-for-syntax name
-                               (t:the 'name typ.value))))
+                               (t:the (freevar 'name) typ.value))))
   (define-syntax-class constructor
     (pattern [name:id : typ:type]
              #:attr define #'(begin

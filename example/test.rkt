@@ -9,18 +9,9 @@
 (data One : Type
       [one : One])
 
-Zero
-One
-one
-Bool
-true
-false
-Nat
-z
-(s z)
-
 (data (List [A : Type]) : Type
       [nil : (List A)]
       [cons (head : A) (tail : (List A)) : (List A)])
 
-(cons z nil)
+(cons z (cons (s z) nil))
+(cons true (cons z (cons z nil))) ; FIXME: this is a case shall get report
