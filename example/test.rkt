@@ -9,3 +9,13 @@
 (data Nat : Type
       [z : Nat]
       [s (n : Nat) : Nat])
+
+Zero
+One
+one
+Bool
+true
+false
+Nat
+z
+(s z)
