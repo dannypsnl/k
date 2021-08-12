@@ -16,7 +16,7 @@
     (pattern name:id
              #:attr value (if (eq? (syntax->datum #'name) 'Type)
                               #`(t:type '#,(gensym 'level))
-                              #''name)))
+                              #'name)))
 
   (define-syntax-class bind
     (pattern [name:id : typ:type]
@@ -25,24 +25,20 @@
     (pattern [name:id : typ:type]
              #:attr define #'(begin
                                (define-for-syntax name (t:the 'name typ.value))
-                               (define name (t:the 'name typ.value))))
+                               (define name 'name)))
     (pattern [name:id binds:bind ... : typ:type]
              #:attr define #'(begin
                                (define-for-syntax name
                                  (t:the 'name (t:pi `(,binds.value ...) typ.value)))
-                               (define name
-                                 (t:the 'name (t:pi `(,binds.value ...) typ.value)))))))
+                               (define (name binds.name ...)
+                                 `(name ,binds.name ...))))))
 
 (define-syntax-parser data
-  [(_ name:id : typ:type)
-   #'(begin
-       (define-for-syntax name (t:the 'name typ.value))
-       (define name (t:the 'name typ.value)))]
   [(_ name:id : typ:type
       ctors:constructor ...)
    #'(begin
        (define-for-syntax name (t:the 'name typ.value))
-       (define name (t:the 'name typ.value))
+       (define name 'name)
        ctors.define ...)])
 
 (define-syntax-parser k-app
@@ -67,6 +63,7 @@
                   '#,(subst typ m))]
         [else (raise-syntax-error 'not-a-function "not a function"
                                   #'f)])]
-     [else #'(#%app f args ...)])])
+     [else (void)])
+   #'(#%app f args ...)])
 
 (module reader syntax/module-reader k)
