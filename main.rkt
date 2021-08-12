@@ -51,18 +51,20 @@
      [(struct* t:the ([value value] [type type]))
       (match type
         [(struct* t:pi ([tele+ tele+] [body typ]))
+         (define m (make-hash))
          (define result
            (for/list ([arg-stx (syntax->list #'(args ...))]
                       [arg (eval #'(list args ...))]
                       [tele tele+])
              (match-define (struct* t:the ([value value] [type arg-type])) arg)
-             (match-define (struct* telescope ([type expect-type])) tele)
+             (match-define (struct* telescope ([name name] [type expect-type])) tele)
              (unless (equal? expect-type arg-type)
                (raise-syntax-error 'type-mismatched "type mismatched"
                                    arg-stx))
+             (hash-set! m name value)
              value))
          #`(t:the '#,(cons value result)
-                  '#,typ)]
+                  '#,(subst typ m))]
         [else (raise-syntax-error 'not-a-function "not a function"
                                   #'f)])]
      [else #'(#%app f args ...)])])
