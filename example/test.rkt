@@ -1,14 +1,13 @@
 #lang k
 
+(provide Zero)
+
+(require k/data/bool
+         k/data/nat)
+
 (data Zero : Type)
 (data One : Type
       [one : One])
-(data Bool : Type
-      [true : Bool]
-      [false : Bool])
-(data Nat : Type
-      [z : Nat]
-      [s (n : Nat) : Nat])
 
 Zero
 One
@@ -19,4 +18,3 @@ false
 Nat
 z
 (s z)
-;(s true)
