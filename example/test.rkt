@@ -18,3 +18,9 @@ false
 Nat
 z
 (s z)
+
+(data (List [A : Type]) : Type
+      [nil : (List A)]
+      [cons (head : A) (tail : (List A)) : (List A)])
+
+(cons z nil)
