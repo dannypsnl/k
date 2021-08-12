@@ -1,16 +1,15 @@
 #lang racket
 
-(provide (except-out (all-from-out racket))
-         data)
+(provide (except-out (all-from-out racket)
+                     #%app)
+         data
+         (rename-out [k-app #%app]))
 
 (require syntax/parse/define
-         (for-syntax syntax/parse))
-
-(struct t:the (value type) #:transparent)
-(struct t:type (level) #:transparent)
-(struct t:pi (tele+ body) #:transparent)
-(struct s:constructor (name type) #:transparent)
-(struct telescope (name type) #:transparent)
+         "core.rkt"
+         (for-syntax syntax/parse
+                     racket/match
+                     "core.rkt"))
 
 (begin-for-syntax
   (define-syntax-class type
@@ -21,23 +20,51 @@
 
   (define-syntax-class bind
     (pattern [name:id : typ:type]
-             #:attr value #`(telescope name typ)))
+             #:attr value #'(telescope 'name typ.value)))
   (define-syntax-class constructor
     (pattern [name:id : typ:type]
-             #:attr value #`(s:constructor name typ)
-             #:attr define #'(define name (t:the 'name typ.value)))
+             #:attr define #'(begin
+                               (define-for-syntax name (t:the 'name typ.value))
+                               (define name (t:the 'name typ.value))))
     (pattern [name:id binds:bind ... : typ:type]
-             #:attr value #`(s:constructor name (t:pi `(,binds.value ...) typ))
-             #:attr define #'(define (name binds.name ...)
-                               (t:the `(name ,binds.name ...) typ.value)))))
+             #:attr define #'(begin
+                               (define-for-syntax name
+                                 (t:the 'name (t:pi `(,binds.value ...) typ.value)))
+                               (define name
+                                 (t:the 'name (t:pi `(,binds.value ...) typ.value)))))))
 
 (define-syntax-parser data
   [(_ name:id : typ:type)
-   #'(define name (t:the 'name typ.value))]
+   #'(begin
+       (define-for-syntax name (t:the 'name typ.value))
+       (define name (t:the 'name typ.value)))]
   [(_ name:id : typ:type
       ctors:constructor ...)
    #'(begin
+       (define-for-syntax name (t:the 'name typ.value))
        (define name (t:the 'name typ.value))
        ctors.define ...)])
+
+(define-syntax-parser k-app
+  [(_ f args ...)
+   (match (eval #'f)
+     [(struct* t:the ([value value] [type type]))
+      (match type
+        [(struct* t:pi ([tele+ tele+] [body typ]))
+         (define result
+           (for/list ([arg-stx (syntax->list #'(args ...))]
+                      [arg (eval #'(list args ...))]
+                      [tele tele+])
+             (match-define (struct* t:the ([value value] [type arg-type])) arg)
+             (match-define (struct* telescope ([type expect-type])) tele)
+             (unless (equal? expect-type arg-type)
+               (raise-syntax-error 'type-mismatched "type mismatched"
+                                   arg-stx))
+             value))
+         #`(t:the '#,(cons value result)
+                  '#,typ)]
+        [else (raise-syntax-error 'not-a-function "not a function"
+                                  #'f)])]
+     [else #'(#%app f args ...)])])
 
 (module reader syntax/module-reader k)

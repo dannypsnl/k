@@ -19,3 +19,4 @@ false
 Nat
 z
 (s z)
+;(s true)
