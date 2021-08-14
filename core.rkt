@@ -2,30 +2,27 @@
 
 (provide (all-defined-out))
 
-(require syntax/parse)
+(require syntax/parse
+         syntax/parse/define)
 
-(define (type-equal? t1 t2)
-  (equal? (syntax->datum t1) (syntax->datum t2)))
 (define (unifier subst-map)
   (define (unify? t1 t2)
-    (syntax-parse #'(t1 t2)
-      #;[((A:id a ...) (B:id b ...))
-         (and (type-equal? #'A #'B)
-              (unify? #'(a ...)
-                      #'(b ...)))]
-      [((Freevar a) b)
-       (unify? t2 t1)]
-      [(b (Freevar a))
+    (match (list t1 t2)
+      [(list `(,a ...) `(,b ...))
+       (map unify? a b)]
+      [(list-no-order `(Freevar ,a) b)
        (define bounded? (hash-ref subst-map #'a #f))
        (unless bounded?
-         (hash-set! subst-map #'a t1))
+         (hash-set! subst-map a b))
        (not bounded?)]
-      [(a b) (type-equal? t1 t2)]))
+      [(list a b)
+       (equal? a b)]))
   unify?)
 (define (check-type term type
                     [subst-map (make-hash)])
   (define unify? (unifier subst-map))
-  (unless (unify? (typeof term) type)
+  (unless (unify? (syntax->datum (typeof term))
+                  (syntax->datum type))
     (raise-syntax-error 'type-mismatch
                         (format "expect: `~a`, get: `~a`"
                                 (syntax->datum type) (typeof-expanded term))
