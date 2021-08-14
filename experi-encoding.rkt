@@ -28,6 +28,8 @@
   [_ (syntax-property #''Bool 'type #'Type)])
 (define-syntax-parser true
   [_ (syntax-property #''true 'type #'Bool)])
+(define-syntax-parser false
+  [_ (syntax-property #''false 'type #'Bool)])
 
 (define-syntax-parser Nat
   [_ (syntax-property #''Nat 'type #'Type)])
