@@ -1,8 +1,9 @@
 #lang racket
 
-(provide (except-out (all-from-out racket)
-                     #%app)
-         data)
+(provide (except-out (all-from-out racket))
+         Type
+         data
+         def)
 
 (require syntax/parse/define
          (for-syntax syntax/parse
@@ -37,5 +38,21 @@
        (define-syntax-parser name
          [_ (syntax-property #''name 'type #'ty)])
        ctor*.def ...)])
+
+(define-syntax-parser def
+  [(_ name:id : ty expr)
+   (check-type #'expr #'ty)
+   #'(begin
+       (define-syntax name
+         (make-variable-like-transformer
+          #'expr))
+       ; (void x) to use x, but slient
+       (void ty))]
+  [(_ name:id : ty
+      [pat* ... => expr*] ...)
+   #'(begin
+       (define-syntax-parser name
+         [{_ pat* ...} #'expr*] ...)
+       (void ty))])
 
 (module reader syntax/module-reader k)

@@ -4,7 +4,8 @@
          syntax/parse
          (for-syntax syntax/transformer
                      k/core)
-         k)
+         k
+         k/data/nat)
 
 (define-syntax-parser Vec
   [(_ E Len)
@@ -20,22 +21,6 @@
    (check-type #'vec #`(Vec #,(typeof #'e) n)
                subst-map)
    (syntax-property #'(list 'v:: e vec) 'type #`(Vec #,(typeof #'e) (s n)))])
-
-(define-syntax-parser def
-  [(_ name:id : ty expr)
-   (check-type #'expr #'ty)
-   #'(begin
-       (define-syntax name
-         (make-variable-like-transformer
-          #'expr))
-       ; (void x) to use x, but slient
-       (void ty))]
-  [(_ name:id : ty
-      [pat* ... => expr*] ...)
-   #'(begin
-       (define-syntax-parser name
-         [{_ pat* ...} #'expr*] ...)
-       (void ty))])
 
 (def c : (Vec Nat z) vnil)
 (v:: {(s z)} z (v:: {z} z vnil))
