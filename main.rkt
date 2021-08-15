@@ -16,34 +16,40 @@
    (syntax-property #'(list 'Type n) 'type #'(Type (add1 n)))])
 
 (begin-for-syntax
-  (define-syntax-class clause
-    (pattern [ctor-name:id (~literal :) ctor-ty]
+  (define-syntax-class ctor-clause
+    (pattern [name:id (~literal :) ty]
              #:attr def
-             #'(define-syntax-parser ctor-name
-                 [_ (syntax-property #''ctor-name 'type #'ctor-ty)]))
-    (pattern [ctor-name:id (p-name* (~literal :) p-ty*) ... (~literal :) ctor-ty]
+             #'(define-syntax-parser name
+                 [_ (syntax-property #''name 'type #'ty)]))
+    (pattern [name:id (p-name* (~literal :) p-ty*) ... (~literal :) ty]
              #:attr def
-             #'(define-syntax-parser ctor-name
+             #'(define-syntax-parser name
                  [(_ p-name* ...)
                   (define subst-map (make-hash))
-                  (check-type #'p-name* #'p-ty* subst-map) ...
-                  (syntax-property #'(list 'ctor-name p-name* ...) 'type #'ctor-ty)]))))
+                  (check-type #'p-name* (subst #'p-ty* subst-map)
+                              subst-map)
+                  ...
+                  (syntax-property #'(list 'name p-name* ...)
+                                   'type (subst #'ty subst-map))]))))
 
 (define-syntax-parser data
   [(_ name:id (~literal :) ty
-      ctor*:clause ...)
+      ctor*:ctor-clause ...)
    #'(begin
        (define-syntax-parser name
          [_ (syntax-property #''name 'type #'ty)])
        ctor*.def ...)]
   [(_ (name:id [p-name* (~literal :) p-ty*] ...) (~literal :) ty
-      ctor*:clause ...)
+      ctor*:ctor-clause ...)
    #'(begin
        (define-syntax-parser name
          [(_ p-name* ...)
           (define subst-map (make-hash))
-          (check-type #'p-name* #'p-ty* subst-map) ...
-          (syntax-property #'(list 'name p-name* ...) 'type #'ty)])
+          (check-type #'p-name* (subst #'p-ty* subst-map)
+                      subst-map)
+          ...
+          (syntax-property #'(list 'name p-name* ...)
+                           'type (subst #'ty subst-map))])
        ctor*.def ...)])
 
 (define-syntax-parser def

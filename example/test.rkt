@@ -5,7 +5,9 @@
 
 (data (List [A : Type]) : Type
       [nil : (List A)]
-      [cons (head : A) (tail : (List A)) : (List A)])
+      [cons (a : A) (l : (List A)) : (List A)])
 
 (List Nat)
-(cons z nil)
+(cons (s z) (cons z nil))
+; FIXME: this didn't get checked
+(cons false (cons z nil))
