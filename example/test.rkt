@@ -1,11 +1,8 @@
 #lang k
 
 (require k/data/bool
-         k/data/nat)
-
-(data (List [A : Type]) : Type
-      [nil : (List A)]
-      [cons (a : A) (l : (List A)) : (List A)])
+         k/data/nat
+         k/data/list)
 
 (List Nat)
 (cons (s z) (cons z nil))
