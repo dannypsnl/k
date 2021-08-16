@@ -40,8 +40,8 @@
                     'type #`(Type #,max-level))])
 (define-syntax-parser ->
   [(_ tele-typ* ... result-ty)
-   (with-syntax ([(tmps ...) (generate-temporaries #'(tele-typ* ...))])
-     #'(Pi [tmps : tele-typ*] ... result-ty))])
+   (with-syntax ([(tmp* ...) (generate-temporaries #'(tele-typ* ...))])
+     #'(Pi [tmp* : tele-typ*] ... result-ty))])
 
 (begin-for-syntax
   (define-syntax-class ctor-clause
