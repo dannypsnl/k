@@ -18,9 +18,18 @@
              (unify? t2 t1)]
       [(a b) #:when (free-identifier? #'a)
              (define bounded? (hash-ref subst-map (syntax->datum #'a) #f))
-             (unless bounded?
-               (hash-set! subst-map (syntax->datum #'a) #'b))
-             #t]
+             (if bounded?
+                 (begin
+                   (if (unify? (hash-ref subst-map (syntax->datum #'a)) t2)
+                       #t
+                       (raise-syntax-error 'cannot-unified
+                                           (format "~a with ~a"
+                                                   (syntax->datum (hash-ref subst-map (syntax->datum #'a)))
+                                                   (syntax->datum t2))
+                                           t2)))
+                 (begin
+                   (hash-set! subst-map (syntax->datum #'a) #'b)
+                   #t))]
       [(((~literal Pi) [ta-name (~literal :) ta-typ] ... ta)
         ((~literal Pi) [tb-name (~literal :) tb-typ] ... tb))
        (and
@@ -38,9 +47,11 @@
                     [subst-map (make-hash)])
   (define unify? (unifier subst-map))
   (unless (unify? (typeof term) type)
+    (displayln subst-map)
     (raise-syntax-error 'type-mismatch
                         (format "expect: `~a`, get: `~a`"
-                                (syntax->datum type) (typeof-expanded term))
+                                (syntax->datum (subst type subst-map))
+                                (syntax->datum (subst (typeof term) subst-map)))
                         term)))
 
 (define (subst stx m)

@@ -8,5 +8,5 @@
 
 (check (≡ z z)
        (refl))
-(check (≡ z (s z))
+(check (≡ (s z) (s z))
        (refl))
