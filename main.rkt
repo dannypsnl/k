@@ -88,8 +88,8 @@
     (syntax-parse pattern-stx
       [x:id #:when (bounded-identifier? #'x)
             #'(~literal x)]
-      #;[(x ...)
-         (map convert (syntax->list #'(x ...)))]
+      [(x ...)
+       (map convert (syntax->list #'(x ...)))]
       [x #'x]))
   (define-syntax-class def-clause
     (pattern [pat* ... => expr]
