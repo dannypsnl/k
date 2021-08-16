@@ -1,8 +1,11 @@
 #lang racket
 
 (provide (except-out (all-from-out racket))
+         ; helpers
          typeof
-         Type
+         ; builtin types
+         Type Pi ->
+         ; definition forms
          data
          def)
 
@@ -15,9 +18,30 @@
   [(_ stx) #`'#,(typeof-expanded #'stx)])
 
 (define-syntax-parser Type
-  [_ (syntax-property #'(list 'Type 0) 'type #'(Type 1))]
+  [_ (syntax-property
+      (syntax-property #'(list 'Type 0) 'type #'(Type 1))
+      'level 0)]
   [(_ n)
-   (syntax-property #'(list 'Type n) 'type #'(Type (add1 n)))])
+   (syntax-property
+    (syntax-property #'(list 'Type n) 'type #'(Type (add1 n)))
+    'level (syntax->datum #'n))])
+
+(define-syntax-parser Pi
+  [(_ [tele-name* (~literal :) tele-typ*] ... result-ty)
+   (define max-level
+     (apply max
+            (cons 0
+                  (filter number?
+                          (map (λ (stx)
+                                 (syntax-property stx 'level))
+                               (syntax->list #'(tele-typ* ...)))))))
+   (syntax-property #'(list 'Pi [list 'tele-name* ': tele-typ*] ...
+                            result-ty)
+                    'type #`(Type #,max-level))])
+(define-syntax-parser ->
+  [(_ tele-typ* ... result-ty)
+   (with-syntax ([(tmps ...) (generate-temporaries #'(tele-typ* ...))])
+     #'(Pi [tmps : tele-typ*] ... result-ty))])
 
 (begin-for-syntax
   (define-syntax-class ctor-clause
