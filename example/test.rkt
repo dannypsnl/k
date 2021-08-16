@@ -4,5 +4,4 @@
          k/data/nat)
 
 (def identity : (-> Nat Nat)
-  [true => z]
-  [false => (s z)])
+  [true => z])

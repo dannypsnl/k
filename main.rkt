@@ -98,14 +98,6 @@
                          #'expr])))
 
 (define-syntax-parser def
-  [(_ name:id : ty expr)
-   (check-type #'expr #'ty)
-   #'(begin
-       (define-syntax name
-         (make-variable-like-transformer
-          #'expr))
-       ; (void x) to use x, but slient
-       (void ty))]
   [(_ name:id : ty clause*:def-clause ...)
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
      (define pat-ty*
@@ -128,6 +120,14 @@
    #'(begin
        (define-syntax-parser name
          clause*.r ...)
+       ; (void x) to use x, but slient
+       (void ty))]
+  [(_ name:id : ty expr)
+   (check-type #'expr #'ty)
+   #'(begin
+       (define-syntax name
+         (make-variable-like-transformer
+          #'expr))
        ; (void x) to use x, but slient
        (void ty))])
 
