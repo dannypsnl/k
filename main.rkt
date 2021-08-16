@@ -36,8 +36,8 @@
                           (map (λ (stx)
                                  (syntax-property stx 'level))
                                (syntax->list #'(tele-typ* ...)))))))
-   (syntax-property #'(list 'Pi [list 'tele-name* ': tele-typ*] ...
-                            result-ty)
+   (syntax-property #'`(Pi ,`[tele-name* : ,tele-typ*] ...
+                           ,result-ty)
                     'type #`(Type #,max-level))])
 (define-syntax-parser ->
   [(_ tele-typ* ... result-ty)
@@ -58,7 +58,7 @@
                   (check-type #'p-name* (subst #'p-ty* subst-map)
                               subst-map)
                   ...
-                  (syntax-property #'(list 'name p-name* ...)
+                  (syntax-property #'`(name ,p-name* ...)
                                    'type (subst #'ty subst-map))]))))
 
 (define-syntax-parser data
