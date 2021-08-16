@@ -3,6 +3,7 @@
 (provide (except-out (all-from-out racket))
          ; helpers
          typeof
+         check
          ; builtin types
          Type Pi ->
          ; definition forms
@@ -120,7 +121,6 @@
    #'(begin
        (define-syntax-parser name
          clause*.r ...)
-       ; (void x) to use x, but slient
        (void ty))]
   [(_ name:id : ty expr)
    (check-type #'expr #'ty)
@@ -128,7 +128,12 @@
        (define-syntax name
          (make-variable-like-transformer
           #'expr))
-       ; (void x) to use x, but slient
        (void ty))])
+(define-syntax-parser check
+  [(_ ty expr)
+   (check-type #'expr #'ty)
+   #'(begin
+       (void ty)
+       expr)])
 
 (module reader syntax/module-reader k)

@@ -2,3 +2,11 @@
 
 (require k/data/bool
          k/data/nat)
+
+(data (≡ [a : A] [b : A]) : Type
+      [refl : (≡ a a)])
+
+(check (≡ z z)
+       (refl))
+(check (≡ z (s z))
+       (refl))
