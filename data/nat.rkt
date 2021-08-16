@@ -11,9 +11,7 @@
   [(s n) m => (s (+ n m))])
 
 (module+ test
-  (require rackunit
-           syntax/parse/define
-           (for-syntax syntax/parse))
+  (require rackunit)
 
   (check-equal? Nat 'Nat)
   (check-equal? z 'z)
