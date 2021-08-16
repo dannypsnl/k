@@ -3,5 +3,3 @@
 (require k/data/bool
          k/data/nat
          k/data/list)
-
-(:: false (:: z nil))

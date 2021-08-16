@@ -3,6 +3,7 @@
 (provide unifier
          check-type
          subst
+         typeof
          typeof-expanded)
 
 (require syntax/parse)
