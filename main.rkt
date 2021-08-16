@@ -107,6 +107,24 @@
        ; (void x) to use x, but slient
        (void ty))]
   [(_ name:id : ty clause*:def-clause ...)
+   (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
+     (define pat-ty*
+       (for/list ([pat (syntax->list pat*)])
+         (syntax-parse pat
+           [x:id #:when (bounded-identifier? #'x)
+                 (typeof #'x)]
+           [(x:id p ...) #:when (bounded-identifier? #'x)
+                         #`#,(gensym 'T)]
+           [x #`#,(gensym 'T)])))
+     (define subst-map (make-hash))
+     (define unify? (unifier subst-map))
+     (define pat-ty #`(-> #,@pat-ty* #,(gensym 'T)))
+     (unless (unify? #'ty pat-ty)
+       (raise-syntax-error 'bad-pattern
+                           (format "expect: `~a`, get: `~a`"
+                                   (syntax->datum #'ty)
+                                   (syntax->datum pat-ty))
+                           #'name)))
    #'(begin
        (define-syntax-parser name
          clause*.r ...)

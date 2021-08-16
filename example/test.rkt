@@ -1,8 +1,8 @@
 #lang k
 
 (require k/data/bool
-         k/data/nat
-         k/data/list)
+         k/data/nat)
 
-(Pi [n : Type] Type)
-(-> Nat Nat Nat)
+(def identity : (-> Nat Nat)
+  [true => z]
+  [false => (s z)])
