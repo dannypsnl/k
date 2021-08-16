@@ -10,19 +10,20 @@
 (define (unifier subst-map)
   (define (unify? t1 t2)
     (syntax-parse (list t1 t2)
-      [(((~literal Freevar) a) ((~literal Freevar) b))
-       #t]
+      [(a b) #:when (and (free-identifier? #'a)
+                         (free-identifier? #'b))
+             #t]
       [(a b) #:when (free-identifier? #'b)
              (unify? t2 t1)]
       [(a b) #:when (free-identifier? #'a)
              (define bounded? (hash-ref subst-map (syntax->datum #'a) #f))
              (unless bounded?
                (hash-set! subst-map (syntax->datum #'a) #'b))
-             (not bounded?)]
+             #t]
       [((a ...) (b ...))
-       (map unify?
-            (syntax->list #'(a ...))
-            (syntax->list #'(b ...)))]
+       (andmap unify?
+               (syntax->list #'(a ...))
+               (syntax->list #'(b ...)))]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
   unify?)
 (define (check-type term type
@@ -48,3 +49,10 @@
 (define (free-identifier? id-stx)
   (and (identifier? id-stx)
        (not (identifier-binding id-stx))))
+
+(module+ test
+  (require rackunit)
+
+  (check-equal? (syntax->datum
+                 (subst #'(List A) (make-hash '((A . Nat)))))
+                '(List Nat)))

@@ -1,7 +1,7 @@
 #lang k
 
-(provide List nil cons)
+(provide List nil ::)
 
 (data (List [A : Type]) : Type
       [nil : (List A)]
-      [cons (a : A) (l : (List A)) : (List A)])
+      [:: (a : A) (l : (List A)) : (List A)])
