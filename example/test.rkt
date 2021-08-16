@@ -5,6 +5,6 @@
          k/data/list)
 
 (List Nat)
-(cons (s z) (cons z nil))
+(typeof (cons (s z) (cons z nil)))
 ; FIXME: this didn't get checked
 (cons false (cons z nil))

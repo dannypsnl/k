@@ -1,6 +1,7 @@
 #lang racket
 
 (provide (except-out (all-from-out racket))
+         typeof
          Type
          data
          def)
@@ -9,6 +10,9 @@
          (for-syntax syntax/parse
                      syntax/transformer
                      "core.rkt"))
+
+(define-syntax-parser typeof
+  [(_ stx) #`'#,(typeof-expanded #'stx)])
 
 (define-syntax-parser Type
   [_ (syntax-property #'(list 'Type 0) 'type #'(Type 1))]

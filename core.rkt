@@ -1,26 +1,28 @@
 #lang racket
 
-(provide (all-defined-out))
+(provide unifier
+         check-type
+         subst
+         typeof-expanded)
 
-(require syntax/parse
-         syntax/parse/define)
+(require syntax/parse)
 
 (define (unifier subst-map)
   (define (unify? t1 t2)
     (syntax-parse (list t1 t2)
+      [(((~literal Freevar) a) ((~literal Freevar) b))
+       #t]
+      [(a b) #:when (free-identifier? #'b)
+             (unify? t2 t1)]
+      [(a b) #:when (free-identifier? #'a)
+             (define bounded? (hash-ref subst-map (syntax->datum #'a) #f))
+             (unless bounded?
+               (hash-set! subst-map (syntax->datum #'a) #'b))
+             (not bounded?)]
       [((a ...) (b ...))
        (map unify?
             (syntax->list #'(a ...))
             (syntax->list #'(b ...)))]
-      [(((~literal Freevar) a) ((~literal Freevar) b))
-       #t]
-      [(a ((~literal Freevar) b))
-       (unify? t2 t1)]
-      [(((~literal Freevar) a) b)
-       (define bounded? (hash-ref subst-map #'a #f))
-       (unless bounded?
-         (hash-set! subst-map #'a #'b))
-       (not bounded?)]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
   unify?)
 (define (check-type term type
@@ -36,14 +38,13 @@
   (syntax-parse stx
     [(A a ...)
      #`(A #,@(map (λ (b) (subst b m)) (syntax->list #'(a ...))))]
-    [name:id
-     (if (identifier-binding stx)
-         (hash-ref m #'name stx)
-         #`(Freevar #,stx))]))
+    [name:id (hash-ref m (syntax->datum #'name) stx)]))
 
-(define (local-expand-expr stx)
-  (local-expand stx 'expression '()))
 (define (typeof stx)
-  (syntax-property (local-expand-expr stx) 'type))
+  (syntax-property (local-expand stx 'expression '()) 'type))
 (define (typeof-expanded stx)
   (syntax->datum (typeof stx)))
+
+(define (free-identifier? id-stx)
+  (and (identifier? id-stx)
+       (not (identifier-binding id-stx))))
