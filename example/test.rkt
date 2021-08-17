@@ -1,10 +1,8 @@
 #lang k
 
 (require k/data/bool
-         k/data/nat)
-
-(data (≡ [a : A] [b : A]) : Type
-      [refl : (≡ a a)])
+         k/data/nat
+         k/equality)
 
 (check (≡ z z)
        (refl))
