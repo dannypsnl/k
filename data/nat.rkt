@@ -1,6 +1,9 @@
 #lang k
 
-(provide Nat z s)
+(provide Nat z s
+         (for-syntax z s)
+         + *
+         (for-syntax + *))
 
 (data Nat : Type
       [z : Nat]

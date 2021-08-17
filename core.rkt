@@ -4,7 +4,9 @@
          check-type
          subst
          typeof
-         typeof-expanded)
+         typeof-expanded
+         syntax-property*
+         local-expand-expr)
 
 (require syntax/parse)
 
@@ -38,11 +40,14 @@
                 (syntax->list #'(ta-typ ...)))
         (unify? #'ta #'tb))]
       [((a ...) (b ...))
-       (andmap unify?
-               (syntax->list #'(a ...))
-               (syntax->list #'(b ...)))]
+       (define as (syntax->list #'(a ...)))
+       (define bs (syntax->list #'(b ...)))
+       (if (= (length as) (length bs))
+           (andmap unify? as bs)
+           (unify? #`#,(eval #'(a ...)) t2))]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
   unify?)
+
 (define (check-type term type
                     [subst-map (make-hash)])
   (define unify? (unifier subst-map))
@@ -63,6 +68,17 @@
   (syntax-property (local-expand stx 'expression identifiers) 'type))
 (define (typeof-expanded stx)
   (syntax->datum (typeof stx)))
+
+(define (local-expand-expr stx)
+  (local-expand stx 'expression '()))
+
+(define (syntax-property* stx . pairs)
+  (match pairs
+    [(cons key (cons value '()))
+     (syntax-property stx key value)]
+    [(cons key (cons value rest))
+     (syntax-property (apply syntax-property* (cons stx rest))
+                      key value)]))
 
 (define (free-identifier? id-stx)
   (and (identifier? id-stx)

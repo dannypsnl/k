@@ -4,7 +4,9 @@
          k/data/nat
          k/equality)
 
-(check (≡ z z)
+(check (≡ true true)
        (refl))
-(check (≡ (s z) (s z))
+
+(check (≡ (+ (s z) (s z))
+          (s (s z)))
        (refl))

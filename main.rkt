@@ -12,8 +12,13 @@
 
 (require syntax/parse/define
          (for-syntax syntax/parse
+                     syntax/parse/define
                      syntax/transformer
-                     "core.rkt"))
+                     "core.rkt")
+         (for-meta 2
+                   racket/base
+                   syntax/transformer
+                   "core.rkt"))
 
 (define-syntax-parser typeof
   [(_ stx) #`'#,(typeof-expanded #'stx)])
@@ -60,22 +65,30 @@
 (define-syntax-parser data
   [(_ name:id (~literal :) ty
       ctor*:ctor-clause ...)
-   #'(begin
-       (define-syntax-parser name
-         [_ (syntax-property #''name 'type #'ty)])
-       ctor*.def ...)]
+   (with-syntax ([def #'(define-syntax-parser name
+                          [_ (syntax-property #''name 'type #'ty)])])
+     #'(begin
+         (begin-for-syntax
+           def
+           ctor*.def ...)
+         def
+         ctor*.def ...))]
   [(_ (name:id [p-name* (~literal :) p-ty*] ...) (~literal :) ty
       ctor*:ctor-clause ...)
-   #'(begin
-       (define-syntax-parser name
-         [(_ p-name* ...)
-          (define subst-map (make-hash))
-          (check-type #'p-name* (subst #'p-ty* subst-map)
-                      subst-map)
-          ...
-          (syntax-property #'(list 'name p-name* ...)
-                           'type (subst #'ty subst-map))])
-       ctor*.def ...)])
+   (with-syntax ([def #'(define-syntax-parser name
+                          [(_ p-name* ...)
+                           (define subst-map (make-hash))
+                           (check-type #'p-name* (subst #'p-ty* subst-map)
+                                       subst-map)
+                           ...
+                           (syntax-property #'`(name ,p-name* ...)
+                                            'type (subst #'ty subst-map))])])
+     #'(begin
+         (begin-for-syntax
+           def
+           ctor*.def ...)
+         def
+         ctor*.def ...))])
 
 (begin-for-syntax
   (define (bounded-identifier? id-stx)
@@ -97,11 +110,14 @@
 (define-syntax-parser def
   [(_ name:id (~literal :) ty expr)
    (check-type #'expr #'ty)
-   #'(begin
-       (define-syntax name
-         (make-variable-like-transformer
-          #'expr))
-       (void ty))]
+   (with-syntax ([def #'(define-syntax name
+                          (make-variable-like-transformer
+                           #'expr))])
+     #'(begin
+         (begin-for-syntax
+           def
+           (void ty))
+         def))]
   [(_ (name:id [p-name* (~literal :) p-ty*] ...) (~literal :) ty
       clause*:def-clause ...)
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
@@ -121,10 +137,13 @@
          [(x:id p ...) #:when (bounded-identifier? #'x)
                        (void)]
          [x (void)])))
-   #'(begin
-       (define-syntax-parser name
-         clause*.r ...)
-       (void ty))])
+   (with-syntax ([def #'(define-syntax-parser name
+                          clause*.r ...)])
+     #'(begin
+         (begin-for-syntax
+           def
+           (void p-ty* ... ty))
+         def))])
 (define-syntax-parser check
   [(_ ty expr)
    (check-type #'expr #'ty)
