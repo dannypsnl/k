@@ -10,6 +10,10 @@
   [z m => m]
   [(s n) m => (s (+ n m))])
 
+(def (* [n : Nat] [m : Nat]) : Nat
+  [z m => z]
+  [(s n) m => (+ m (* n m))])
+
 (module+ test
   (require rackunit)
 
@@ -27,4 +31,9 @@
   (check-equal? (+ (s z) (s z))
                 '(s (s z)))
   (check-equal? (+ (s (s z)) (s z))
-                '(s (s (s z)))))
+                '(s (s (s z))))
+
+  (check-equal? (* (s (s z)) (s z))
+                '(s (s z)))
+  (check-equal? (* (s (s z)) (s (s z)))
+                '(s (s (s (s z))))))
