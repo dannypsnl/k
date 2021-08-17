@@ -6,7 +6,7 @@
       [z : Nat]
       [s (n : Nat) : Nat])
 
-(def + : (-> Nat Nat Nat)
+(def (+ [n : Nat] [m : Nat]) : Nat
   [z m => m]
   [(s n) m => (s (+ n m))])
 
@@ -17,8 +17,11 @@
   (check-equal? z 'z)
   (check-equal? (s (s (s z))) '(s (s (s z))))
 
-  (def a : Nat z)
-  (check-equal? a z)
+  (def a : Nat (s (s z)))
+  (check-equal? a (s (s z)))
+
+  (def b : Nat (+ z (s (s z))))
+  (check-equal? b (s (s z)))
 
   (check-equal? (+ z (s z)) '(s z))
   (check-equal? (+ (s z) (s z))

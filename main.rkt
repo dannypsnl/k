@@ -5,7 +5,7 @@
          typeof
          check
          ; builtin types
-         Type Pi ->
+         Type Pi
          ; definition forms
          data
          def)
@@ -39,10 +39,6 @@
    (syntax-property #'`(Pi ,`[tele-name* : ,tele-typ*] ...
                            ,result-ty)
                     'type #`(Type #,max-level))])
-(define-syntax-parser ->
-  [(_ tele-typ* ... result-ty)
-   (with-syntax ([(tmp* ...) (generate-temporaries #'(tele-typ* ...))])
-     #'(Pi [tmp* : tele-typ*] ... result-ty))])
 
 (begin-for-syntax
   (define-syntax-class ctor-clause
@@ -99,35 +95,35 @@
                          #'expr])))
 
 (define-syntax-parser def
-  [(_ name:id : ty clause*:def-clause ...)
-   (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
-     (define pat-ty*
-       (for/list ([pat (syntax->list pat*)])
-         (syntax-parse pat
-           [x:id #:when (bounded-identifier? #'x)
-                 (typeof #'x)]
-           [(x:id p ...) #:when (bounded-identifier? #'x)
-                         #`#,(gensym 'T)]
-           [x #`#,(gensym 'T)])))
-     (define subst-map (make-hash))
-     (define unify? (unifier subst-map))
-     (define pat-ty #`(-> #,@pat-ty* #,(gensym 'T)))
-     (unless (unify? #'ty pat-ty)
-       (raise-syntax-error 'bad-pattern
-                           (format "expect: `~a`, get: `~a`"
-                                   (syntax->datum #'ty)
-                                   (syntax->datum pat-ty))
-                           #'name)))
-   #'(begin
-       (define-syntax-parser name
-         clause*.r ...)
-       (void ty))]
-  [(_ name:id : ty expr)
+  [(_ name:id (~literal :) ty expr)
    (check-type #'expr #'ty)
    #'(begin
        (define-syntax name
          (make-variable-like-transformer
           #'expr))
+       (void ty))]
+  [(_ (name:id [p-name* (~literal :) p-ty*] ...) (~literal :) ty
+      clause*:def-clause ...)
+   (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
+     (define subst-map (make-hash))
+     (define unify? (unifier subst-map))
+     (for ([pat (syntax->list pat*)]
+           [exp-ty (syntax->list #'(p-ty* ...))])
+       (syntax-parse pat
+         [x:id #:when (bounded-identifier? #'x)
+               (define pat-ty (typeof #'x))
+               (unless (unify? pat-ty exp-ty)
+                 (raise-syntax-error 'bad-pattern
+                                     (format "expect: `~a`, get: `~a`"
+                                             (syntax->datum exp-ty)
+                                             (syntax->datum pat-ty))
+                                     pat))]
+         [(x:id p ...) #:when (bounded-identifier? #'x)
+                       (void)]
+         [x (void)])))
+   #'(begin
+       (define-syntax-parser name
+         clause*.r ...)
        (void ty))])
 (define-syntax-parser check
   [(_ ty expr)

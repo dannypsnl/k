@@ -47,7 +47,6 @@
                     [subst-map (make-hash)])
   (define unify? (unifier subst-map))
   (unless (unify? (typeof term) type)
-    (displayln subst-map)
     (raise-syntax-error 'type-mismatch
                         (format "expect: `~a`, get: `~a`"
                                 (syntax->datum (subst type subst-map))
@@ -60,8 +59,8 @@
      #`(A #,@(map (λ (b) (subst b m)) (syntax->list #'(a ...))))]
     [name:id (hash-ref m (syntax->datum #'name) stx)]))
 
-(define (typeof stx)
-  (syntax-property (local-expand stx 'expression '()) 'type))
+(define (typeof stx [identifiers '()])
+  (syntax-property (local-expand stx 'expression identifiers) 'type))
 (define (typeof-expanded stx)
   (syntax->datum (typeof stx)))
 
