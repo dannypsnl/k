@@ -148,7 +148,8 @@
   [(_ ty expr)
    (check-type #'expr #'ty)
    #'(begin
-       (void ty)
+       (begin-for-syntax
+         (void ty))
        expr)])
 
 (module reader syntax/module-reader k)
