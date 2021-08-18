@@ -83,9 +83,8 @@
       [x #'x]))
   (define-syntax-class def-clause
     (pattern [pat* ... => expr]
-             #:attr r #`[(_ #,@(map convert
-                                    (syntax->list #'(pat* ...))))
-                         #'expr])))
+             #:attr pat #`(_ #,@(map convert
+                                     (syntax->list #'(pat* ...)))))))
 
 (define-syntax-parser def
   [(_ name:id (~literal :) ty expr)
@@ -118,7 +117,7 @@
                        (void)]
          [x (void)])))
    (with-syntax ([def #'(define-syntax-parser name
-                          clause*.r ...)])
+                          [clause*.pat #'clause*.expr] ...)])
      #'(begin
          (begin-for-syntax
            def
