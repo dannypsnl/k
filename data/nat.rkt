@@ -1,7 +1,7 @@
 #lang k
 
 (provide Nat z s
-         (for-syntax z s)
+         (for-syntax Nat z s)
          + *
          (for-syntax + *))
 
