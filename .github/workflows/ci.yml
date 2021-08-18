@@ -43,7 +43,7 @@ jobs:
           variant: ${{ matrix.racket-variant }}
           version: ${{ matrix.racket-version }}
       - name: Installing k and its dependencies
-        run: raco pkg install --no-docs --auto --name k
+        run: raco pkg install --skip-installed --no-docs --auto --name k
       - name: Compiling k and building its docs
         run: raco setup --check-pkg-deps --unused-pkg-deps k
       - name: Testing k
