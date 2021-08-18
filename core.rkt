@@ -12,12 +12,12 @@
 (define (unifier subst-map)
   (define (unify? t1 t2)
     (syntax-parse (list t1 t2)
-      [(a b) #:when (and (free-identifier? #'a)
-                         (free-identifier? #'b))
+      [(a b) #:when (and (free-identifier? t1)
+                         (free-identifier? t2))
              #t]
-      [(a b) #:when (free-identifier? #'b)
+      [(a b) #:when (free-identifier? t2)
              (unify? t2 t1)]
-      [(a b) #:when (free-identifier? #'a)
+      [(a b) #:when (free-identifier? t1)
              (define bounded? (hash-ref subst-map (syntax->datum #'a) #f))
              (if bounded?
                  (begin
@@ -42,12 +42,9 @@
        (define as (syntax->list #'(a ...)))
        (define bs (syntax->list #'(b ...)))
        (cond
-         [(= (length as) (length bs))
-          (andmap unify? as bs)]
-         [(> (length as) (length bs))
-          (unify? #`#,(eval #'(a ...)) t2)]
-         [else
-          (unify? t1 #`#,(eval #'(b ...)))])]
+         [(= (length as) (length bs)) (andmap unify? as bs)]
+         [(> (length as) (length bs)) (unify? (datum->syntax t1 (eval t1) t1) t2)]
+         [else (unify? t1 (datum->syntax t2 (eval t2) t2))])]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
   unify?)
 

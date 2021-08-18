@@ -15,7 +15,10 @@
           (+ (s z) (s z)))
        (refl))
 
-; BUG
 (check (≡ (* (s z) (s z))
-          (s (s (s (s (s z))))))
+          (s z))
+       (refl))
+
+(check (≡ (* (s (s z)) (s (s z)))
+          (s (s (s (s z)))))
        (refl))
