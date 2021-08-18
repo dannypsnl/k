@@ -5,7 +5,8 @@
          subst
          typeof
          typeof-expanded
-         syntax-property*)
+         syntax-property*
+         bounded-identifier?)
 
 (require syntax/parse)
 
@@ -24,7 +25,7 @@
                    (if (unify? (hash-ref subst-map (syntax->datum #'a)) t2)
                        #t
                        (raise-syntax-error 'cannot-unified
-                                           (format "~a with ~a"
+                                           (format "`~a` with `~a`"
                                                    (syntax->datum (hash-ref subst-map (syntax->datum #'a)))
                                                    (syntax->datum t2))
                                            t2)))
@@ -39,12 +40,9 @@
                 (syntax->list #'(ta-typ ...)))
         (unify? #'ta #'tb))]
       [((a ...) (b ...))
-       (define as (syntax->list #'(a ...)))
-       (define bs (syntax->list #'(b ...)))
-       (cond
-         [(= (length as) (length bs)) (andmap unify? as bs)]
-         [(> (length as) (length bs)) (unify? (normalize t1) t2)]
-         [else (unify? t1 (normalize t2))])]
+       (andmap unify?
+               (syntax->list #'(a ...))
+               (syntax->list #'(b ...)))]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
   unify?)
 
@@ -54,7 +52,11 @@
 (define (check-type term type
                     [subst-map (make-hash)])
   (define unify? (unifier subst-map))
-  (unless (unify? (typeof term) type)
+  (unless (unify? (typeof term)
+                  (if (or (free-identifier? type)
+                          (bounded-identifier? type))
+                      type
+                      (normalize type)))
     (raise-syntax-error 'type-mismatch
                         (format "expect: `~a`, get: `~a`"
                                 (syntax->datum (subst type subst-map))
@@ -86,6 +88,9 @@
 (define (free-identifier? id-stx)
   (and (identifier? id-stx)
        (not (identifier-binding id-stx))))
+(define (bounded-identifier? id-stx)
+  (and (identifier? id-stx)
+       (identifier-binding id-stx (syntax-local-phase-level) #t)))
 
 (module+ test
   (require rackunit)

@@ -74,9 +74,6 @@
          ctor*.def ...))])
 
 (begin-for-syntax
-  (define (bounded-identifier? id-stx)
-    (and (identifier? id-stx)
-         (identifier-binding id-stx (syntax-local-phase-level) #t)))
   (define (convert pattern-stx)
     (syntax-parse pattern-stx
       [x:id #:when (bounded-identifier? #'x)
