@@ -5,20 +5,20 @@
          k/equality)
 
 (check (≡ true true)
-       (refl))
+       refl)
 
 (check (≡ (+ (s z) (s z))
           (s (s z)))
-       (refl))
+       refl)
 
 (check (≡ (s (s z))
           (+ (s z) (s z)))
-       (refl))
+       refl)
 
 (check (≡ (* (s z) (s z))
           (s z))
-       (refl))
+       refl)
 
 (check (≡ (* (s (s z)) (s (s z)))
           (s (s (s (s z)))))
-       (refl))
+       refl)
