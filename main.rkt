@@ -121,7 +121,7 @@
      #'(begin
          (begin-for-syntax
            def
-           (void p-ty* ... ty))
+           (void p-ty* ...))
          def))])
 (define-syntax-parser check
   [(_ ty expr)
