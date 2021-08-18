@@ -47,16 +47,18 @@
   unify?)
 
 (define (normalize stx)
-  (datum->syntax stx (eval stx) stx))
+  (syntax-parse stx
+    [(a ...)
+     (define as (syntax->list stx))
+     (if (ormap free-identifier? as)
+         (map normalize as)
+         (datum->syntax stx (eval stx) stx))]
+    [else stx]))
 
 (define (check-type term type
                     [subst-map (make-hash)])
   (define unify? (unifier subst-map))
-  (unless (unify? (typeof term)
-                  (if (or (free-identifier? type)
-                          (bounded-identifier? type))
-                      type
-                      (normalize type)))
+  (unless (unify? (typeof term) (normalize type))
     (raise-syntax-error 'type-mismatch
                         (format "expect: `~a`, get: `~a`"
                                 (syntax->datum (subst type subst-map))
