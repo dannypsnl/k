@@ -6,15 +6,18 @@
          check
          ; builtin types
          Type Pi
+         (for-syntax Type Pi)
          ; definition forms
          data
          def)
 
 (require syntax/parse/define
+         "type.rkt"
          (for-syntax syntax/parse
                      syntax/parse/define
                      syntax/transformer
-                     "core.rkt")
+                     "core.rkt"
+                     "type.rkt")
          (for-meta 2
                    racket/base
                    syntax/transformer
@@ -23,34 +26,14 @@
 (define-syntax-parser typeof
   [(_ stx) #`'#,(typeof-expanded #'stx)])
 
-(define-syntax-parser Type
-  [_ (syntax-property
-      (syntax-property #'(list 'Type 0) 'type #'(Type 1))
-      'level 0)]
-  [(_ n)
-   (syntax-property
-    (syntax-property #'(list 'Type n) 'type #'(Type (add1 n)))
-    'level (syntax->datum #'n))])
-
-(define-syntax-parser Pi
-  [(_ [tele-name* (~literal :) tele-typ*] ... result-ty)
-   (define max-level
-     (apply max
-            (cons 0
-                  (filter number?
-                          (map (λ (stx)
-                                 (syntax-property stx 'level))
-                               (syntax->list #'(tele-typ* ...)))))))
-   (syntax-property #'`(Pi ,`[tele-name* : ,tele-typ*] ...
-                           ,result-ty)
-                    'type #`(Type #,max-level))])
-
 (begin-for-syntax
   (define-syntax-class ctor-clause
     (pattern [name:id (~literal :) ty]
              #:attr def
              #'(define-syntax-parser name
-                 [_ (syntax-property #''name 'type #'ty)]))
+                 [_ (syntax-property* #''name
+                                      'type #'ty
+                                      'normal? #t)]))
     (pattern [name:id (p-name* (~literal :) p-ty*) ... (~literal :) ty]
              #:attr def
              #'(define-syntax-parser name
@@ -59,14 +42,17 @@
                   (check-type #'p-name* (subst #'p-ty* subst-map)
                               subst-map)
                   ...
-                  (syntax-property #'`(name ,p-name* ...)
-                                   'type (subst #'ty subst-map))]))))
+                  (syntax-property* #'`(name ,p-name* ...)
+                                    'type (subst #'ty subst-map)
+                                    'normal? #t)]))))
 
 (define-syntax-parser data
   [(_ name:id (~literal :) ty
       ctor*:ctor-clause ...)
    (with-syntax ([def #'(define-syntax-parser name
-                          [_ (syntax-property #''name 'type #'ty)])])
+                          [_ (syntax-property* #''name
+                                               'type #'ty
+                                               'normal? #t)])])
      #'(begin
          (begin-for-syntax
            def
@@ -81,8 +67,9 @@
                            (check-type #'p-name* (subst #'p-ty* subst-map)
                                        subst-map)
                            ...
-                           (syntax-property #'`(name ,p-name* ...)
-                                            'type (subst #'ty subst-map))])])
+                           (syntax-property* #'`(name ,p-name* ...)
+                                             'type (subst #'ty subst-map)
+                                             'normal? #t)])])
      #'(begin
          (begin-for-syntax
            def

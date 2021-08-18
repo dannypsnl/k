@@ -5,8 +5,7 @@
          subst
          typeof
          typeof-expanded
-         syntax-property*
-         local-expand-expr)
+         syntax-property*)
 
 (require syntax/parse)
 
@@ -42,9 +41,13 @@
       [((a ...) (b ...))
        (define as (syntax->list #'(a ...)))
        (define bs (syntax->list #'(b ...)))
-       (if (= (length as) (length bs))
-           (andmap unify? as bs)
-           (unify? #`#,(eval #'(a ...)) t2))]
+       (cond
+         [(= (length as) (length bs))
+          (andmap unify? as bs)]
+         [(> (length as) (length bs))
+          (unify? #`#,(eval #'(a ...)) t2)]
+         [else
+          (unify? t1 #`#,(eval #'(b ...)))])]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
   unify?)
 
