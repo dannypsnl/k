@@ -32,8 +32,7 @@
              #:attr def
              #'(define-syntax-parser name
                  [_ (syntax-property* #''name
-                                      'type #'ty
-                                      'normal? #t)]))
+                                      'type #'ty)]))
     (pattern [name:id (p-name* (~literal :) p-ty*) ... (~literal :) ty]
              #:attr def
              #'(define-syntax-parser name
@@ -43,16 +42,14 @@
                               subst-map)
                   ...
                   (syntax-property* #'`(name ,p-name* ...)
-                                    'type (subst #'ty subst-map)
-                                    'normal? #t)]))))
+                                    'type (subst #'ty subst-map))]))))
 
 (define-syntax-parser data
   [(_ name:id (~literal :) ty
       ctor*:ctor-clause ...)
    (with-syntax ([def #'(define-syntax-parser name
                           [_ (syntax-property* #''name
-                                               'type #'ty
-                                               'normal? #t)])])
+                                               'type #'ty)])])
      #'(begin
          (begin-for-syntax
            def
@@ -68,8 +65,7 @@
                                        subst-map)
                            ...
                            (syntax-property* #'`(name ,p-name* ...)
-                                             'type (subst #'ty subst-map)
-                                             'normal? #t)])])
+                                             'type (subst #'ty subst-map))])])
      #'(begin
          (begin-for-syntax
            def
