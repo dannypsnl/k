@@ -43,10 +43,13 @@
        (define bs (syntax->list #'(b ...)))
        (cond
          [(= (length as) (length bs)) (andmap unify? as bs)]
-         [(> (length as) (length bs)) (unify? (datum->syntax t1 (eval t1) t1) t2)]
-         [else (unify? t1 (datum->syntax t2 (eval t2) t2))])]
+         [(> (length as) (length bs)) (unify? (normalize t1) t2)]
+         [else (unify? t1 (normalize t2))])]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
   unify?)
+
+(define (normalize stx)
+  (datum->syntax stx (eval stx) stx))
 
 (define (check-type term type
                     [subst-map (make-hash)])
