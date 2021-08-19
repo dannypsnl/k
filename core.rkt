@@ -5,8 +5,10 @@
          subst
          typeof
          typeof-expanded
+         local-expand-expr
          syntax-property*
-         bounded-identifier?)
+         bounded-identifier?
+         normalize)
 
 (require syntax/parse
          syntax/stx)
@@ -51,17 +53,12 @@
   unify?)
 
 (define (normalize stx)
-  (syntax-parse stx
-    [(a ...)
-     (if (ormap free-identifier? (syntax->list stx))
-         (stx-map normalize stx)
-         (datum->syntax stx (eval stx) stx))]
-    [else stx]))
+  (datum->syntax stx (eval (local-expand-expr stx)) stx))
 
 (define (check-type term type
                     [subst-map (make-hash)])
   (define unify? (unifier subst-map))
-  (unless (unify? (typeof term) (normalize type))
+  (unless (unify? (typeof term) type)
     (raise-syntax-error 'type-mismatch
                         (format "expect: `~a`, get: `~a`"
                                 (syntax->datum (subst type subst-map))
@@ -75,10 +72,7 @@
     [name:id (hash-ref m (syntax->datum #'name) stx)]))
 
 (define (typeof stx [identifiers '()])
-  (define t (syntax-property (local-expand stx 'expression identifiers) 'type))
-  (if t
-      t
-      #`#,(gensym 'F)))
+  (syntax-property (local-expand stx 'expression identifiers) 'type))
 (define (typeof-expanded stx)
   (syntax->datum (typeof stx)))
 
