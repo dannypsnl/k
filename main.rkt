@@ -16,6 +16,7 @@
          (for-syntax syntax/parse
                      syntax/parse/define
                      syntax/transformer
+                     syntax/stx
                      "core.rkt"
                      "type.rkt")
          (for-meta 2
@@ -79,12 +80,11 @@
       [x:id #:when (bounded-identifier? #'x)
             #'(~literal x)]
       [(x ...)
-       (map convert (syntax->list #'(x ...)))]
+       (stx-map convert #'(x ...))]
       [x #'x]))
   (define-syntax-class def-clause
     (pattern [pat* ... => expr]
-             #:attr pat #`(_ #,@(map convert
-                                     (syntax->list #'(pat* ...)))))))
+             #:attr pat #`(_ #,@(stx-map convert #'(pat* ...))))))
 
 (define-syntax-parser def
   [(_ name:id (~literal :) ty expr)

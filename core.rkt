@@ -8,7 +8,8 @@
          syntax-property*
          bounded-identifier?)
 
-(require syntax/parse)
+(require syntax/parse
+         syntax/stx)
 
 (define (unifier subst-map)
   (define (unify? t1 t2)
@@ -52,9 +53,8 @@
 (define (normalize stx)
   (syntax-parse stx
     [(a ...)
-     (define as (syntax->list stx))
-     (if (ormap free-identifier? as)
-         (map normalize as)
+     (if (ormap free-identifier? (syntax->list stx))
+         (stx-map normalize stx)
          (datum->syntax stx (eval stx) stx))]
     [else stx]))
 
@@ -71,7 +71,7 @@
 (define (subst stx m)
   (syntax-parse stx
     [(A a ...)
-     #`(A #,@(map (λ (b) (subst b m)) (syntax->list #'(a ...))))]
+     #`(A #,@(stx-map (λ (b) (subst b m)) #'(a ...)))]
     [name:id (hash-ref m (syntax->datum #'name) stx)]))
 
 (define (typeof stx [identifiers '()])
