@@ -13,6 +13,12 @@
 (define (unifier subst-map)
   (define (unify? t1 t2)
     (syntax-parse (list t1 t2)
+      [(a b) #:when (and (free-identifier? t1)
+                         (free-identifier? t2))
+             (define bounded? (hash-ref subst-map (syntax->datum #'a) #f))
+             (if bounded?
+                 (unify? t2 bounded?)
+                 #t)]
       [(a b) #:when (free-identifier? t2)
              (unify? t2 t1)]
       [(a b) #:when (free-identifier? t1)
