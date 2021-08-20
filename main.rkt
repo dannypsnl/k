@@ -84,27 +84,28 @@
        (define-syntax name (make-variable-like-transformer #'expr)))]
   [(_ (name:id [p-name* (~literal :) p-ty*] ...) (~literal :) ty
       clause*:def-clause ...)
-   #;(for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
-       (define subst-map (make-hash))
-       (define unify? (unifier subst-map))
-       (for ([pat (syntax->list pat*)]
-             [exp-ty (syntax->list #'(p-ty* ...))])
-         (syntax-parse pat
-           [x:id #:when (bounded-identifier? #'x)
-                 (define pat-ty (typeof #'x))
-                 (unless (unify? pat-ty exp-ty)
-                   (raise-syntax-error 'bad-pattern
-                                       (format "expect: `~a`, get: `~a`"
-                                               (syntax->datum exp-ty)
-                                               (syntax->datum pat-ty))
-                                       pat))]
-           [(x:id p ...) #:when (bounded-identifier? #'x)
-                         (void)]
-           [x (void)])))
+   (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
+     (define subst-map (make-hash))
+     (define unify? (unifier subst-map))
+     (for ([pat (syntax->list pat*)]
+           [exp-ty (syntax->list #'(p-ty* ...))])
+       (syntax-parse pat
+         [x:id #:when (bounded-identifier? #'x)
+               (define pat-ty (typeof #'x))
+               (unless (unify? pat-ty exp-ty)
+                 (raise-syntax-error 'bad-pattern
+                                     (format "expect: `~a`, get: `~a`"
+                                             (syntax->datum exp-ty)
+                                             (syntax->datum pat-ty))
+                                     pat))]
+         [(x:id p ...) #:when (bounded-identifier? #'x)
+                       (void)]
+         [x (void)])))
    (with-syntax ([def #'(define-syntax-parser name
                           [clause*.pat #'clause*.expr] ...)])
      #'(begin
-         (void p-ty* ... ty)
+         (void (λ (p-name* ...)
+                 ty))
          def))])
 (define-syntax-parser check
   [(_ ty expr)

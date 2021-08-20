@@ -11,10 +11,14 @@
          normalize)
 
 (require syntax/parse
-         syntax/stx)
+         syntax/stx
+         "type.rkt")
 
 (define (unifier subst-map)
   (define (unify? t1 t2)
+    (unless (and (syntax? t1) (syntax? t2))
+      (error 'not-syntax
+             "~a or ~a" t1 t2))
     (syntax-parse (list t1 t2)
       [(a b) #:when (and (free-identifier? t1)
                          (free-identifier? t2))
@@ -72,7 +76,12 @@
     [name:id (hash-ref m (syntax->datum #'name) stx)]))
 
 (define (typeof stx [identifiers '()])
-  (syntax-property (local-expand stx 'expression identifiers) 'type))
+  (define t (syntax-property (local-expand stx 'expression identifiers) 'type))
+  (if t
+      t
+      (syntax-property* #`#,(gensym 'F)
+                        'type #'Type))
+  )
 (define (typeof-expanded stx)
   (syntax->datum (typeof stx)))
 
