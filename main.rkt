@@ -102,9 +102,12 @@
                        (void)]
          [x (void)])))
    (with-syntax ([def #'(define-syntax-parser name
-                          [clause*.pat #'clause*.expr] ...)])
+                          [clause*.pat #'clause*.expr] ...)]
+                 [(free-p-ty* ...)
+                  (filter free-identifier? (syntax->list #'(p-ty* ...)))])
      #'(begin
-         (void (λ (p-name* ...)
+         (void (let* ([free-p-ty* 'free-p-ty*] ...
+                      [p-name* 'p-name*] ...)
                  ty))
          def))])
 (define-syntax-parser check

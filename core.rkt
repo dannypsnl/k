@@ -7,6 +7,7 @@
          typeof-expanded
          local-expand-expr
          syntax-property*
+         free-identifier?
          bounded-identifier?
          normalize)
 
