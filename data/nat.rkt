@@ -3,6 +3,8 @@
 (provide Nat z s
          + *)
 
+(require k/data/bool)
+
 (data Nat : Type
       [z : Nat]
       [s (n : Nat) : Nat])
@@ -14,6 +16,12 @@
 (def (* [n : Nat] [m : Nat]) : Nat
   [z m => z]
   [(s n) m => (+ m (* n m))])
+
+(def (Nat=? [n : Nat] [m : Nat]) : Bool
+  [z z => true]
+  [z (s m) => false]
+  [(s n) z => false]
+  [(s n) (s m) => (Nat=? n m)])
 
 (module+ test
   (require rackunit)
