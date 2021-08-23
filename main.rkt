@@ -1,11 +1,12 @@
 #lang racket
 
 (provide (except-out (all-from-out racket/base))
+         ; builtin types
+         Type Pi
          ; helpers
          typeof
          check
-         ; builtin types
-         Type Pi
+         data-out
          ; definition forms
          data
          def)

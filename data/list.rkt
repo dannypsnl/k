@@ -1,6 +1,6 @@
 #lang k
 
-(provide List nil ::)
+(provide (data-out List))
 
 (data (List [A : Type]) : Type
       [nil : (List A)]

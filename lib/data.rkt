@@ -1,15 +1,20 @@
 #lang racket/base
 
-(provide data)
+(provide data
+         data-out)
 
 (require syntax/parse/define
          (for-syntax racket/base
+                     racket/provide-transform
                      syntax/parse
                      syntax/parse/define
                      syntax/stx
                      "core.rkt"))
 
 (begin-for-syntax
+  (define data-out-set (make-hash))
+  (define (id->export id) (export id (syntax->datum id) 0 #f id))
+
   (define-syntax-class ctor-clause
     (pattern [name:id (~literal :) ty]
              #:attr def
@@ -30,6 +35,7 @@
 (define-syntax-parser data
   [(_ name:id (~literal :) ty
       ctor*:ctor-clause ...)
+   (hash-set! data-out-set (syntax->datum #'name) (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
    (with-syntax ([def #'(define-syntax-parser name
                           [_ (syntax-property* #''name 'type #'ty)])])
      #'(begin
@@ -37,6 +43,7 @@
          ctor*.def ...))]
   [(_ (name:id [p-name* (~literal :) p-ty*] ...) (~literal :) ty
       ctor*:ctor-clause ...)
+   (hash-set! data-out-set (syntax->datum #'name) (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
    (with-syntax ([def #'(define-syntax-parser name
                           [(_ p-name* ...)
                            (define subst-map (make-hash))
@@ -49,3 +56,19 @@
      #'(begin
          def
          ctor*.def ...))])
+
+(define-syntax data-out
+  (make-provide-transformer
+   (lambda (stx modes)
+     (unless (or (null? modes)
+                 (equal? '(0) modes))
+       (raise-syntax-error
+        #f
+        "allowed only for relative phase level 0"
+        stx))
+     (syntax-parse stx
+       [(_ data-type:id)
+        (define l (hash-ref data-out-set (syntax->datum #'data-type) #f))
+        (unless l
+          (raise-syntax-error #f "only data-type can be used in `data-out`" #'data-type ))
+        l]))))

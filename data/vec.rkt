@@ -1,6 +1,6 @@
 #lang k
 
-(provide Vec nil ::)
+(provide (data-out Vec))
 
 (data (Vec [E : Type] [Len : Nat]) : Type
       [nil : (Vec E z)]
