@@ -70,5 +70,5 @@
        [(_ data-type:id)
         (define l (hash-ref data-out-set (syntax->datum #'data-type) #f))
         (unless l
-          (raise-syntax-error #f "only data-type can be used in `data-out`" #'data-type ))
+          (raise-syntax-error #f "only data-type can be used in `data-out`" #'data-type))
         l]))))
