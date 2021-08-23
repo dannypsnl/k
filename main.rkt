@@ -12,13 +12,13 @@
 
 (require racket/base
          syntax/parse/define
-         "type.rkt"
+         "lib/type.rkt"
          (for-syntax racket/base
                      syntax/parse
                      syntax/parse/define
                      syntax/transformer
                      syntax/stx
-                     "core.rkt"))
+                     "lib/core.rkt"))
 
 (define-syntax-parser typeof
   [(_ stx) #`'#,(typeof-expanded #'stx)])
