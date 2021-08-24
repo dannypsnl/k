@@ -1,6 +1,6 @@
 #lang k
 
-(provide Nat z s
+(provide (data-out Nat)
          + *)
 
 (require k/data/bool)

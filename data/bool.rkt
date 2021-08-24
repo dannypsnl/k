@@ -1,6 +1,6 @@
 #lang k
 
-(provide Bool true false)
+(provide (data-out Bool))
 
 (data Bool : Type
       [true : Bool]
