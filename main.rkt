@@ -26,16 +26,16 @@
   [(_ stx) #`'#,(typeof-expanded #'stx)])
 
 (begin-for-syntax
-  (define (convert pattern-stx)
+  (define (syntax->compute-pattern pattern-stx)
     (syntax-parse pattern-stx
       [x:id #:when (bounded-identifier? #'x)
             #'(~literal x)]
       [(x ...)
-       (stx-map convert #'(x ...))]
+       (stx-map syntax->compute-pattern #'(x ...))]
       [x #'x]))
   (define-syntax-class def-clause
     (pattern [pat* ... => expr]
-             #:attr pat #`(_ #,@(stx-map convert #'(pat* ...))))))
+             #:attr pat #`(_ #,@(stx-map syntax->compute-pattern #'(pat* ...))))))
 
 (define-syntax-parser def
   [(_ name:id (~literal :) ty expr)
