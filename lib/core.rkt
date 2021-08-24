@@ -77,7 +77,7 @@
     [name:id (hash-ref m (syntax->datum #'name) stx)]))
 
 (define (typeof stx [identifiers '()])
-  (define t (syntax-property (local-expand stx 'expression identifiers) 'type))
+  (define t (syntax-property (local-expand-expr stx identifiers) 'type))
   (if t
       t
       (syntax-property* #`#,(gensym 'F)
@@ -86,8 +86,8 @@
 (define (typeof-expanded stx)
   (syntax->datum (typeof stx)))
 
-(define (local-expand-expr stx)
-  (local-expand stx 'expression '()))
+(define (local-expand-expr stx [ids '()])
+  (local-expand stx 'expression ids))
 
 (define (syntax-property* stx . pairs)
   (match pairs
