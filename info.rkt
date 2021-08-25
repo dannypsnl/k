@@ -7,4 +7,4 @@
 (define version "0.0")
 (define pkg-authors '(dannypsnl))
 
-(define compile-omit-paths '("example"))
+(define compile-omit-paths '("example" "test"))
