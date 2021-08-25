@@ -19,11 +19,11 @@
     (pattern [name:id (~literal :) ty]
              #:attr def
              #'(define-syntax-parser name
-                 [_ (syntax-property* #''name 'type #'ty)]))
+                 [_:id (syntax-property* #''name 'type #'ty)]))
     (pattern [name:id (p-name* (~literal :) p-ty*) ... (~literal :) ty]
              #:attr def
              #'(define-syntax-parser name
-                 [(_ p-name* ...)
+                 [(_:id p-name* ...)
                   (define subst-map (make-hash))
                   (check-type #'p-name* (subst #'p-ty* subst-map)
                               subst-map)
@@ -33,15 +33,16 @@
                                       'type (subst #'ty subst-map)))]))))
 
 (define-syntax-parser data
-  [(_ name:id (~literal :) ty
+  #:datum-literals (:)
+  [(_ name:id : ty
       ctor*:ctor-clause ...)
    (hash-set! data-out-set (syntax->datum #'name) (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
    (with-syntax ([def #'(define-syntax-parser name
-                          [_ (syntax-property* #''name 'type #'ty)])])
+                          [_:id (syntax-property* #''name 'type #'ty)])])
      #'(begin
          def
          ctor*.def ...))]
-  [(_ (name:id [p-name* (~literal :) p-ty*] ...) (~literal :) ty
+  [(_ (name:id [p-name* : p-ty*] ...) : ty
       ctor*:ctor-clause ...)
    (hash-set! data-out-set (syntax->datum #'name) (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
    (with-syntax ([def #'(define-syntax-parser name

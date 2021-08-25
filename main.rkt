@@ -38,12 +38,13 @@
              #:attr pat #`(_ #,@(stx-map syntax->compute-pattern #'(pat* ...))))))
 
 (define-syntax-parser def
-  [(_ name:id (~literal :) ty expr)
+  #:datum-literals (:)
+  [(_ name:id : ty expr)
    (check-type #'expr (normalize #'ty))
    #'(begin
        (void ty)
        (define-syntax name (make-variable-like-transformer #'expr)))]
-  [(_ (name:id [p-name* (~literal :) p-ty*] ...) (~literal :) ty
+  [(_ (name:id [p-name* : p-ty*] ...) : ty
       clause*:def-clause ...)
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
      (define subst-map (make-hash))
