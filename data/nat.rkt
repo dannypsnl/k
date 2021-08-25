@@ -1,7 +1,8 @@
 #lang k/base
 
 (provide (data-out Nat)
-         + *)
+         + *
+         Nat=?)
 
 (require k/data/bool)
 
