@@ -5,7 +5,6 @@
 (require syntax/parse/define
          (for-syntax racket/base
                      syntax/parse
-                     syntax/parse/define
                      syntax/transformer
                      syntax/stx
                      "core.rkt"))
