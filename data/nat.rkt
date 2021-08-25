@@ -1,4 +1,4 @@
-#lang k
+#lang k/base
 
 (provide (data-out Nat)
          + *)

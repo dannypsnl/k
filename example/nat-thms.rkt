@@ -1,4 +1,4 @@
-#lang k
+#lang k/base
 
 (require k/data/nat
          k/equality)

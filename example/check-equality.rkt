@@ -1,4 +1,4 @@
-#lang k
+#lang k/base
 
 (require k/data/bool
          k/data/nat
