@@ -1,10 +1,11 @@
 #lang scribble/manual
-@require[@for-label[k]]
+@require[@for-label[k]
+         "helper.rkt"]
 
 @title{k}
 @author{Lîm Tsú-thuàn/林子篆}
 
-@defmodule[k]
+@defmodulelang[k]
 
 k is a theorem prover that works under racket ecosystem, wants to interact with normal racket program, still in active development.
 
@@ -117,11 +118,13 @@ This section introduces forms of the language.
 
 @section{Library}
 
-@subsection{k/data/nat}
+@defmodule[k/data/nat]
 
-@defidform[Nat]{type @code{Nat}}
-@defidform[z]{constructor @code{z}}
-@defform[(s n)]{constructor @code{s}}
+@defidform[Nat]{
+    type @code{Nat}
+    @defsubidform[z]{constructor @code{z}}
+    @defsubform[(s n)]{constructor @code{s}}
+}
 
 @defform[(+ n m)]{
     Plus @code{n} and @code{m}.
@@ -135,25 +138,33 @@ This section introduces forms of the language.
     return @code{n} and @code{m} is same(@code{true}) or not(@code{false}).
 }
 
-@subsection{k/data/bool}
+@defmodule[k/data/bool]
 
-@defidform[Bool]{type @code{Bool}}
-@defidform[true]{constructor @code{true}}
-@defidform[false]{constructor @code{false}}
+@defidform[Bool]{
+    type @code{Bool}
+    @defsubidform[true]{constructor @code{true}}
+    @defsubidform[false]{constructor @code{false}}
+}
 
-@subsection{k/data/list}
+@defmodule[k/data/list]
 
-@defform[(List A)]{type @code{List}}
-@defidform[nil]{constructor @code{nil}}
-@defform[(:: e list)]{constructor @code{::}}
+@defform[(List A)]{
+    type @code{List}
+    @defsubidform[nil]{constructor @code{nil}}
+    @defsubform[(:: e list)]{constructor @code{::}}
+}
 
-@subsection{k/data/vec}
+@defmodule[k/data/vec]
 
-@defform[(Vec E Len)]{type @code{Vec}}
-@defidform[nil]{constructor @code{nil}}
-@defform[(:: e vec)]{constructor @code{::}}
+@defform[(Vec E Len)]{
+    type @code{Vec}
+    @defsubidform[nil]{constructor @code{nil}}
+    @defsubform[(:: e vec)]{constructor @code{::}}
+}
 
-@subsection{k/equality}
+@defmodule[k/equality]
 
-@defform[(≡ x y)]{type @code{≡}}
-@defidform[refl]{constructor @code{refl}}
+@defform[(≡ x y)]{
+    type @code{≡}: Martin-Löf identity
+    @defsubidform[refl]{constructor @code{refl}}
+}
