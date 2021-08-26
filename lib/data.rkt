@@ -17,11 +17,12 @@
   (define (id->export id) (export id (syntax->datum id) 0 #f id))
 
   (define-syntax-class ctor-clause
-    (pattern [name:id (~literal :) ty]
+    #:datum-literals (:)
+    (pattern [name:id : ty]
              #:attr def
              #'(define-syntax-parser name
                  [_:id (syntax-property* #''name 'type #'ty)]))
-    (pattern [name:id p*:bind ... (~literal :) ty]
+    (pattern [name:id p*:bind ... : ty]
              #:attr def
              #'(define-syntax-parser name
                  [(_:id p*.name ...)

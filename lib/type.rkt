@@ -5,7 +5,8 @@
 (require syntax/parse/define)
 
 (define-syntax-parser Pi
-  [(_ [tele-name* (~literal :) tele-typ*] ... result-ty)
+  #:datum-literals (:)
+  [(_ [tele-name* : tele-typ*] ... result-ty)
    (define max-level
      (apply max
             (cons 0
