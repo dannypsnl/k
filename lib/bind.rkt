@@ -5,4 +5,5 @@
 (require syntax/parse)
 
 (define-syntax-class bind
-  (pattern (name:id (~literal :) ty)))
+  #:datum-literals (:)
+  (pattern (name:id : ty)))
