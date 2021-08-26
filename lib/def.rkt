@@ -7,6 +7,7 @@
                      syntax/parse
                      syntax/transformer
                      syntax/stx
+                     "bind.rkt"
                      "core.rkt"))
 
 (begin-for-syntax
@@ -28,13 +29,13 @@
    #'(begin
        (void ty)
        (define-syntax name (make-variable-like-transformer #'expr)))]
-  [(_ (name:id [p-name* : p-ty*] ...) : ty
+  [(_ (name:id p*:bind ...) : ty
       clause*:def-clause ...)
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
      (define subst-map (make-hash))
      (define unify? (unifier subst-map))
      (for ([pat (syntax->list pat*)]
-           [exp-ty (syntax->list #'(p-ty* ...))])
+           [exp-ty (syntax->list #'(p*.ty ...))])
        (syntax-parse pat
          [x:id #:when (bounded-identifier? #'x)
                (define pat-ty (typeof #'x))
@@ -50,9 +51,9 @@
    (with-syntax ([def #'(define-syntax-parser name
                           [clause*.pat #'clause*.expr] ...)]
                  [(free-p-ty* ...)
-                  (filter free-identifier? (syntax->list #'(p-ty* ...)))])
+                  (filter free-identifier? (syntax->list #'(p*.ty ...)))])
      #'(begin
          (void (let* ([free-p-ty* 'free-p-ty*] ...
-                      [p-name* 'p-name*] ...)
+                      [p*.name 'p*.name] ...)
                  ty))
          def))])
