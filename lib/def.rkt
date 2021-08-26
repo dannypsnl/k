@@ -29,7 +29,7 @@
    #'(begin
        (void ty)
        (define-syntax name (make-variable-like-transformer #'expr)))]
-  [(_ (name:id p*:bind ...) : ty
+  [(_ (name:id p*:bindings) : ty
       clause*:def-clause ...)
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
      (define subst-map (make-hash))

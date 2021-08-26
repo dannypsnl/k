@@ -22,7 +22,7 @@
              #:attr def
              #'(define-syntax-parser name
                  [_:id (syntax-property* #''name 'type #'ty)]))
-    (pattern [name:id p*:bind ... : ty]
+    (pattern [name:id p*:bindings : ty]
              #:attr def
              #'(define-syntax-parser name
                  [(_:id p*.name ...)
@@ -44,7 +44,7 @@
      #'(begin
          def
          ctor*.def ...))]
-  [(_ (name:id p*:bind ...) : ty
+  [(_ (name:id p*:bindings) : ty
       ctor*:ctor-clause ...)
    (hash-set! data-out-set (syntax->datum #'name) (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
    (with-syntax ([def #'(define-syntax-parser name
