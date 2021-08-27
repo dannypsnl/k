@@ -43,13 +43,6 @@
                  (begin
                    (hash-set! subst-map (syntax->datum #'a) #'b)
                    #t))]
-      [(((~literal Pi) [ta-name (~literal :) ta-typ] ... ta)
-        ((~literal Pi) [tb-name (~literal :) tb-typ] ... tb))
-       (and
-        (andmap unify?
-                (syntax->list #'(ta-typ ...))
-                (syntax->list #'(ta-typ ...)))
-        (unify? #'ta #'tb))]
       [((a ...) (b ...))
        (andmap unify?
                (syntax->list #'(a ...))
