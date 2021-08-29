@@ -10,15 +10,15 @@
       [z : Nat]
       [s (n : Nat) : Nat])
 
-(def (+ [n : Nat] [m : Nat]) : Nat
+(def (+ [n m : Nat]) : Nat
   [z m => m]
   [(s n) m => (s (+ n m))])
 
-(def (* [n : Nat] [m : Nat]) : Nat
+(def (* [n m : Nat]) : Nat
   [z m => z]
   [(s n) m => (+ m (* n m))])
 
-(def (Nat=? [n : Nat] [m : Nat]) : Bool
+(def (Nat=? [n m : Nat]) : Bool
   [z z => true]
   [z (s m) => false]
   [(s n) z => false]
