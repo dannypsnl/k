@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        racket-version: ["8.0", "8.1", "8.2", "current"]
+        racket-version: ["8.1", "8.2", "current"]
         racket-variant: ["BC", "CS"]
     steps:
       - uses: actions/checkout@v2
