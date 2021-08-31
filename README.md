@@ -1,6 +1,7 @@
 # k
 
 [![CI](https://github.com/racket-tw/k/actions/workflows/ci.yml/badge.svg)](https://github.com/racket-tw/k/actions/workflows/ci.yml)
+[![Documentation](https://img.shields.io/badge/docs-published-blue)](https://docs.racket-lang.org/k/)
 
 K is a theorem prover based on Racket ecosystem, interact with Racket in useful way is the major purpose of the project.
 
