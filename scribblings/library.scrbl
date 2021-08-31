@@ -1,8 +1,15 @@
 #lang scribble/manual
-@require[@for-label[k]
+@require[@for-label[(except-in k * + not true false)
+                    k/data/nat
+                    k/data/bool
+                    k/data/list
+                    k/data/fin
+                    k/equality]
          "helper.rkt"]
 
 @title[#:tag "library"]{Library}
+
+@section{Nat}
 
 @defmodule[k/data/nat]
 
@@ -24,6 +31,8 @@
     return @code{n} and @code{m} is same(@code{true}) or not(@code{false}).
 }
 
+@section{Bool}
+
 @defmodule[k/data/bool]
 
 @defidform[Bool]{
@@ -31,6 +40,8 @@
     @defsubidform[true]{constructor @code{true}}
     @defsubidform[false]{constructor @code{false}}
 }
+
+@section{List}
 
 @defmodule[k/data/list]
 
@@ -40,6 +51,8 @@
     @defsubform[(:: e list)]{constructor @code{::}}
 }
 
+@section{Vector}
+
 @defmodule[k/data/vec]
 
 @defform[(Vec E Len)]{
@@ -48,9 +61,11 @@
     @defsubform[(:: e vec)]{constructor @code{::}}
 }
 
+@section{Equality}
+
 @defmodule[k/equality]
 
 @defform[(≡ x y)]{
-    type @code{≡}: Martin-Löf identity
+    type @code{≡} Martin-Löf identity
     @defsubidform[refl]{constructor @code{refl}}
 }

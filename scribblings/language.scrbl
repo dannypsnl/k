@@ -1,5 +1,8 @@
 #lang scribble/manual
-@require[@for-label[k]]
+@require[@for-label[(except-in k * + not true false)
+                    k/equality
+                    k/data/bool
+                    k/data/nat]]
 
 @title[#:tag "language"]{Language}
 
