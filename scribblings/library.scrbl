@@ -10,7 +10,6 @@
 @title[#:tag "library"]{Library}
 
 @section{Nat}
-
 @defmodule[k/data/nat]
 
 @defidform[Nat]{
@@ -32,7 +31,6 @@
 }
 
 @section{Bool}
-
 @defmodule[k/data/bool]
 
 @defidform[Bool]{
@@ -42,7 +40,6 @@
 }
 
 @section{List}
-
 @defmodule[k/data/list]
 
 @defform[(List A)]{
@@ -52,7 +49,6 @@
 }
 
 @section{Vector}
-
 @defmodule[k/data/vec]
 
 @defform[(Vec E Len)]{
@@ -61,8 +57,16 @@
     @defsubform[(:: e vec)]{constructor @code{::}}
 }
 
-@section{Equality}
+@section{Fin}
+@defmodule[k/data/fin]
 
+@defform[(Fin [n : Nat])]{
+    type @code{Fin}
+    @defsubidform[fzero]{constructor @code{fzero}}
+    @defsubform[(fsuc f)]{constructor @code{fsuc}}
+}
+
+@section{Equality}
 @defmodule[k/equality]
 
 @defform[(≡ x y)]{
