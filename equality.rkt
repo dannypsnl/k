@@ -2,5 +2,5 @@
 
 (provide (data-out ≡))
 
-(data (≡ [a : A] [b : A]) : Type
+(data (≡ [a b : A]) : Type
       [refl : (≡ a a)])
