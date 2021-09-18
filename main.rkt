@@ -1,7 +1,8 @@
 #lang racket
 
-(provide (all-from-out racket)
-         (all-from-out "base.rkt"))
+(provide (all-from-out
+          racket
+          "base.rkt"))
 
 (require "base.rkt")
 
