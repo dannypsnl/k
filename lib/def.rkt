@@ -4,6 +4,7 @@
 
 (require syntax/parse/define
          (for-syntax racket/base
+                     racket/list
                      syntax/parse
                      syntax/transformer
                      syntax/stx
@@ -31,23 +32,41 @@
        (define-syntax name (make-variable-like-transformer #'expr)))]
   [(_ (name:id p*:bindings) : ty
       clause*:def-clause ...)
-   (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
+   (define (find-frees stx)
+     (syntax-parse stx
+       [x:id #:when (free-identifier? #'x)
+             stx]
+       [(x ...)
+        (map find-frees (syntax->list #'(x ...)))]
+       [x #f]))
+   (for ([pat* (syntax->list #'((clause*.pat* ...) ...))]
+         [body (syntax->list #'(clause*.expr ...))])
+     (define map (make-hash))
+     (define (ss stx)
+       (syntax-parse stx
+         [x:id #:when (free-identifier? #'x)
+               (hash-set! map (syntax->datum stx)
+                          (syntax-property* #`#,(gensym 'F)
+                                            'type #'Type))]
+         [(x ...)
+          (stx-map ss #'(x ...))]
+         [else (void)]))
+     (define (give-frees-type stx)
+       (syntax-parse stx
+         [x:id #:when (free-identifier? #'x)
+               (syntax-property* stx
+                                 'type (hash-ref map (syntax->datum stx)))]
+         [(x ...)
+          (stx-map give-frees-type #'(x ...))]
+         [x stx]))
      (define subst-map (make-hash))
-     (define unify? (unifier subst-map))
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
-       (syntax-parse pat
-         [x:id #:when (bounded-identifier? #'x)
-               (define pat-ty (typeof #'x))
-               (unless (unify? pat-ty exp-ty)
-                 (raise-syntax-error 'bad-pattern
-                                     (format "expect: `~a`, get: `~a`"
-                                             (syntax->datum exp-ty)
-                                             (syntax->datum pat-ty))
-                                     pat))]
-         [(x:id p ...) #:when (bounded-identifier? #'x)
-                       (void)]
-         [x (void)])))
+       (ss pat)
+       (parameterize ([skip-identifiers (filter identifier? (flatten (find-frees pat)))])
+         (check-type (give-frees-type pat) exp-ty subst-map)))
+     (parameterize ([skip-identifiers (filter identifier? (flatten (find-frees body)))])
+       (check-type (give-frees-type body) #'ty subst-map)))
    (with-syntax ([def #'(define-syntax-parser name
                           [clause*.pat #'clause*.expr] ...)]
                  [(free-p-ty* ...)

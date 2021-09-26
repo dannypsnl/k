@@ -9,7 +9,8 @@
          syntax-property*
          free-identifier?
          bounded-identifier?
-         normalize)
+         normalize
+         skip-identifiers)
 
 (require syntax/parse
          syntax/stx
@@ -53,14 +54,16 @@
 (define (normalize stx)
   (datum->syntax stx (eval (local-expand-expr stx)) stx))
 
-(define (check-type term type
-                    [subst-map (make-hash)])
+(define skip-identifiers (make-parameter '()))
+
+(define (check-type term type [subst-map (make-hash)])
   (define unify? (unifier subst-map))
-  (unless (unify? (typeof term) type)
+  (define term-type (typeof term))
+  (unless (unify? term-type type)
     (raise-syntax-error 'type-mismatch
                         (format "expect: `~a`, get: `~a`"
                                 (syntax->datum (subst type subst-map))
-                                (syntax->datum (subst (typeof term) subst-map)))
+                                (syntax->datum (subst term-type subst-map)))
                         term)))
 
 (define (subst stx m)
@@ -69,18 +72,13 @@
      #`(A #,@(stx-map (λ (b) (subst b m)) #'(a ...)))]
     [name:id (hash-ref m (syntax->datum #'name) stx)]))
 
-(define (typeof stx [identifiers '()])
-  (define t (syntax-property (local-expand-expr stx identifiers) 'type))
-  (if t
-      t
-      (syntax-property* #`#,(gensym 'F)
-                        'type #'Type))
-  )
+(define (typeof stx)
+  (syntax-property (local-expand-expr stx) 'type))
 (define (typeof-expanded stx)
   (syntax->datum (typeof stx)))
 
-(define (local-expand-expr stx [ids '()])
-  (local-expand stx 'expression ids))
+(define (local-expand-expr stx)
+  (local-expand stx 'expression (skip-identifiers)))
 
 (define (syntax-property* stx . pairs)
   (match pairs
