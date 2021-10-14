@@ -1,4 +1,4 @@
-SCRBL := raco scribble ++main-xref-in --redirect-main http://docs.racket-lang.org/
+SCRBL := raco scribble --htmls ++main-xref-in --redirect-main http://docs.racket-lang.org/
 
 OUT_DIR := doc_build
 $(OUT_DIR):
@@ -10,3 +10,6 @@ build: $(OUT_DIR)
 
 test:
 	@raco test .
+
+clean:
+	@rm -r $(OUT_DIR)
