@@ -1,6 +1,6 @@
 # k
 
-[![CI](https://github.com/racket-tw/k/actions/workflows/ci.yml/badge.svg)](https://github.com/racket-tw/k/actions/workflows/ci.yml)
+[![Test](https://github.com/racket-tw/k/actions/workflows/test.yml/badge.svg)](https://github.com/racket-tw/k/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/racket-tw/k/badge.svg?branch=develop)](https://coveralls.io/github/racket-tw/k?branch=develop)
 [![Documentation](https://img.shields.io/badge/docs-published-blue)](https://docs.racket-lang.org/k/)
 
