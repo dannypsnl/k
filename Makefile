@@ -6,7 +6,7 @@ $(OUT_DIR):
 
 .PHONY: build publish test
 build: $(OUT_DIR)
-	@$(SCRBL) --dest $(OUT_DIR) scribblings/racket-project.scrbl
+	@$(SCRBL) --dest $(OUT_DIR) scribblings/k.scrbl
 
 test:
 	@raco test .
