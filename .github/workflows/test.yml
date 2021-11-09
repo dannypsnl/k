@@ -25,7 +25,7 @@ jobs:
     strategy:
       matrix:
         racket-variant: [ 'BC', 'CS' ]
-        racket-version: [ '8.1', '8.2' ]
+        racket-version: [ '8.1', '8.2', '8.3' ]
     steps:
     - uses: actions/checkout@master
     - name: Cache installed packages
@@ -36,7 +36,7 @@ jobs:
           ~/.local/share/racket
         key: ${{ runner.os }}-primes
     - name: Setup Racket
-      uses: Bogdanp/setup-racket@v1.6.1
+      uses: Bogdanp/setup-racket@v1.7
       with:
         architecture: 'x64' # (x64 or x86), ignored on Linux
         distribution: 'minimal'
