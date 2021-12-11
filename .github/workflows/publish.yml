@@ -1,23 +1,18 @@
-# This is a basic workflow to help you get started with Actions
 name: Publish
 
-# Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the develop branch
   push:
-    branches: [ develop ]
+    branches: [develop]
     paths:
-    - '**publish.yml'
-    - '**.scrbl'
+      - "**publish.yml"
+      - "**.scrbl"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Cache installed packages
         uses: actions/cache@v2
@@ -28,17 +23,17 @@ jobs:
           key: ${{ runner.os }}-primes
       - uses: Bogdanp/setup-racket@v1.7
         with:
-          architecture: 'x64'
-          distribution: 'minimal'
-          variant: 'CS'
-          version: '8.3'
+          architecture: "x64"
+          distribution: "minimal"
+          variant: "CS"
+          version: "current"
       - name: Build
         run: |
           raco pkg install --auto --skip-installed
-          make build
-      - name: Deploy
+          raco scribble --htmls ++main-xref-in --redirect-main http://docs.racket-lang.org/ --dest doc scribblings/${{ github.event.repository.name }}.scrbl
+      - name: Deploy Document
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: doc_build
+          publish_dir: doc/${{ github.event.repository.name }}
           publish_branch: master
