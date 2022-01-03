@@ -10,3 +10,6 @@
 (def (not [b : Bool]) : Bool
   [false => true]
   [true => false])
+
+(data True? : (-> Bool Type)
+      [true? : (True? true)])
