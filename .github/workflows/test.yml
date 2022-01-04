@@ -45,5 +45,8 @@ jobs:
       - run: |
           raco pkg install --auto ./k-core
           raco pkg install --auto ./k-lib
-          raco pkg install --auto ./k
-      - run: raco test .
+      - run: |
+          raco pkg install --auto ./k-test
+          raco pkg install --auto ./k-example
+          raco test ./k-test
+          raco test ./k-example
