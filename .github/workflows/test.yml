@@ -42,5 +42,8 @@ jobs:
           distribution: "minimal"
           variant: ${{ matrix.racket-variant }}
           version: ${{ matrix.racket-version }}
-      - run: raco pkg install --auto --skip-installed
+      - run: |
+          raco pkg install ./k-core
+          raco pkg install ./k-lib
+          raco pkg install ./k
       - run: raco test .

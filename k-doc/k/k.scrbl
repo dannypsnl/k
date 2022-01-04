@@ -7,5 +7,5 @@
 
 k is a theorem prover that works under racket ecosystem, wants to interact with normal racket program, still in active development.
 
-@include-section["language.scrbl"]
-@include-section["library.scrbl"]
+@include-section["pages/language.scrbl"]
+@include-section["pages/library.scrbl"]
