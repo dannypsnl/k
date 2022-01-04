@@ -1,9 +1,11 @@
 #lang info
 (define collection 'multi)
 (define deps '("k-core"
-               "k-lib"
-               "k-test"))
+               "k-lib"))
 (define implies '("k-core" "k-lib"))
+(define build-deps '("k-test"
+                     "k-example"
+                     "k-doc"))
 (define pkg-desc "k theorem prover")
 (define version "0.0")
 (define license '(Apache-2.0 OR MIT))
