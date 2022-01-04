@@ -41,9 +41,9 @@ jobs:
           version: "stable"
           packages: "cover, cover-coveralls"
       - run: |
-          raco pkg install ./k-core
-          raco pkg install ./k-lib
-          raco pkg install ./k
+          raco pkg install --auto ./k-core
+          raco pkg install --auto ./k-lib
+          raco pkg install --auto ./k
       - run: |
           raco test .
           raco cover -b -f coveralls .

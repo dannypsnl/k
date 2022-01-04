@@ -43,7 +43,7 @@ jobs:
           variant: ${{ matrix.racket-variant }}
           version: ${{ matrix.racket-version }}
       - run: |
-          raco pkg install ./k-core
-          raco pkg install ./k-lib
-          raco pkg install ./k
+          raco pkg install --auto ./k-core
+          raco pkg install --auto ./k-lib
+          raco pkg install --auto ./k
       - run: raco test .
