@@ -6,13 +6,28 @@
 
 K is a theorem prover based on Racket ecosystem, interact with Racket in useful way is the major purpose of the project.
 
+### Installation
+
+1. only want core language
+    ```shell
+    raco pkg install --auto ./k-core
+    ```
+2. wants standard library
+    ```shell
+    raco pkg install --auto ./k-core
+    raco pkg install --auto ./k-lib
+    ```
+
 ### For developer
 
 The following commands might be helpful for your development
 
 ```shell
-# install pkg k itself
-raco pkg install --auto
+raco pkg install --auto ./k-core
+raco pkg install --auto ./k-lib
+raco pkg install --auto ./k-doc
+raco pkg install --auto ./k-test
+raco pkg install --auto ./k-example
 # apply git config of the project
 git config commit.template $(pwd)/.gitmessage
 ```
