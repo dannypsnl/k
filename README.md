@@ -10,12 +10,12 @@ K is a theorem prover based on Racket ecosystem, interact with Racket in useful 
 
 1. only want core language
     ```shell
-    raco pkg install --auto ./k-core
+    raco pkg install --auto k-core
     ```
 2. wants standard library
     ```shell
-    raco pkg install --auto ./k-core
-    raco pkg install --auto ./k-lib
+    raco pkg install --auto k-core
+    raco pkg install --auto k-lib
     ```
 
 ### For developer
