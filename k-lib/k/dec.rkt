@@ -5,7 +5,7 @@
 (require "evidence.rkt")
 
 (def (not [v : Type]) : Type
-  [P (-> P ⊥)])
+  [P => (-> P ⊥)])
 
 (data (Dec [A : Type]) : Type
       [yes : (A . -> . (Dec A))]
