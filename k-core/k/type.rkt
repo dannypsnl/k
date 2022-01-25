@@ -22,7 +22,7 @@
   [_ (syntax-property
       (syntax-property #'(list 'Type 0) 'type #'(Type 1))
       'level 0)]
-  [(_ n)
+  [(_ n:integer)
    (syntax-property
     (syntax-property #'(list 'Type n) 'type #'(Type (add1 n)))
     'level (syntax->datum #'n))])
