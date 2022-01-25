@@ -6,7 +6,8 @@
 
 (define-syntax-parser Pi
   #:datum-literals (:)
-  [(_ [tele-name* : tele-typ*] ... result-ty)
+  [(_ ([tele-name* : tele-typ*] ...)
+      result)
    (define max-level
      (apply max
             (cons 0
@@ -14,8 +15,8 @@
                           (map (λ (stx)
                                  (syntax-property stx 'level))
                                (syntax->list #'(tele-typ* ...)))))))
-   (syntax-property #'`(Pi ,`[tele-name* : ,tele-typ*] ...
-                           ,result-ty)
+   (syntax-property #'`(Pi (,`[tele-name* : ,tele-typ*] ...)
+                           ,result)
                     'type #`(Type #,max-level))])
 
 (define-syntax-parser Type
