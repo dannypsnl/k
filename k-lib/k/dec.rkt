@@ -2,8 +2,6 @@
 (provide (data-out Dec)
          not)
 
-(require "evidence.rkt")
-
 (def (not [v : Type]) : Type
   [P => (-> P ⊥)])
 
