@@ -28,6 +28,8 @@
   (require rackunit)
 
   (check-equal? Nat 'Nat)
+  (check-equal? (typeof z) 'Nat)
+  (check-equal? (typeof s) '(Pi ([n : Nat]) Nat))
   (check-equal? z 'z)
   (check-equal? (s (s (s z))) '(s (s (s z))))
 

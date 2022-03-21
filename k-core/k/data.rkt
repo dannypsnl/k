@@ -9,7 +9,7 @@
                      syntax/parse
                      syntax/parse/define
                      syntax/stx
-                     "bind.rkt"
+                     "bindings.rkt"
                      "core.rkt"))
 
 (begin-for-syntax
@@ -25,6 +25,12 @@
     (pattern [name:id p*:bindings : ty]
              #:attr def
              #'(define-syntax-parser name
+                 [_:id
+                  (syntax-property*
+                   #''name
+                   'type
+                   #'(Pi ([p*.name : p*.ty] ...) ty)
+                   )]
                  [(_:id p*.name ...)
                   (define subst-map (make-hash))
                   (check-type #'p*.name (subst #'p*.ty subst-map)

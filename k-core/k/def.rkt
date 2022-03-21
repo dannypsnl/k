@@ -7,7 +7,7 @@
                      syntax/parse
                      syntax/transformer
                      syntax/stx
-                     "bind.rkt"
+                     "bindings.rkt"
                      "core.rkt"))
 
 (begin-for-syntax
