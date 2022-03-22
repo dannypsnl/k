@@ -2,11 +2,8 @@ name: Publish notes via GitHub Pages
 
 on:
   push:
-    branches: [master]
+    branches: [develop]
     paths: ["**publish.yml", "**.jl", "**.md"]
-  pull_request:
-    branches: ["*"]
-    paths: ["**.jl", "**.md"]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
