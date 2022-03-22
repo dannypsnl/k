@@ -32,7 +32,7 @@ jobs:
           path: |
             ~/.cache/racket
             ~/.local/share/racket
-          key: ${{ runner.os }}-primes
+          key: ${{ runner.os }}-test
       - name: Setup Racket
         uses: Bogdanp/setup-racket@v1.7
         with:
