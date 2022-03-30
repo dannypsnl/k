@@ -49,6 +49,7 @@
                            locals)]
          ; typeof x should be a Pi type here, then here are going to unify p*... with telescope of the Pi type
          ; we should use telescope to bind type to free variable
+         ; FIXME: I believe this won't work for nested destruct like `(suc (suc n))`
          [(x:id p* ...) #:when (bounded-identifier? #'x)
                         (syntax-parse (typeof #'x)
                           [(Pi ([x* : typ*] ...) _)
