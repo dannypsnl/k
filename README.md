@@ -18,6 +18,24 @@ K is a theorem prover based on Racket ecosystem, interact with Racket in useful 
     raco pkg install --auto k-lib
     ```
 
+### Usage
+
+NOTE: implicit parameter haven't implemented, the following is a bit pseudo code
+
+```racket
+(def (symm {A : Type} {x y : A}
+           [P : (≡ x y)])
+  : (≡ y x)
+  [refl => refl])
+
+(def (trans {A : Type}
+            {x y z : A}
+            [P1 : (≡ x y)]
+            [P2 : (≡ y z)])
+  : (≡ x z)
+  [refl refl => refl])
+```
+
 ### For developer
 
 The following commands might be helpful for your development
