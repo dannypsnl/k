@@ -29,8 +29,7 @@
                   (syntax-property*
                    #''name
                    'type
-                   #'(Pi ([p*.name : p*.ty] ...) ty)
-                   )]
+                   #'(Pi ([p*.name : p*.ty] ...) ty))]
                  [(_:id p*.name ...)
                   (define subst-map (make-hash))
                   (check-type #'p*.name (subst #'p*.ty subst-map)
