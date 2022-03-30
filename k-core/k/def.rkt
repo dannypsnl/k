@@ -40,18 +40,13 @@
      ; itself type need to be stored for later check
      (dict-set! locals #'name #'(Pi ([p*.name : p*.ty] ...) ty))
      (define subst-map (make-hash))
-     (define unify? (unifier subst-map))
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
        (syntax-parse pat
          [x:id #:when (bounded-identifier? #'x)
-               (define pat-ty (typeof #'x))
-               (unless (unify? pat-ty exp-ty)
-                 (raise-syntax-error 'bad-pattern
-                                     (format "expect: `~a`, get: `~a`"
-                                             (syntax->datum exp-ty)
-                                             (syntax->datum pat-ty))
-                                     pat))]
+               (check-type #'x exp-ty
+                           subst-map
+                           locals)]
          ; typeof x should be a Pi type here, then here are going to unify p*... with telescope of the Pi type
          ; we should use telescope to bind type to free variable
          [(x:id p* ...) #:when (bounded-identifier? #'x)
