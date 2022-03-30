@@ -1,5 +1,4 @@
 #lang racket
-
 (provide unifier
          check-type
          subst
@@ -13,7 +12,8 @@
 
 (require syntax/parse
          syntax/stx
-         "type.rkt")
+         racket/dict
+         "helper/id-hash.rkt")
 
 (define (unifier subst-map)
   (define (unify? t1 t2)
@@ -54,13 +54,14 @@
   (datum->syntax stx (eval (local-expand-expr stx)) stx))
 
 (define (check-type term type
-                    [subst-map (make-hash)])
+                    [subst-map (make-hash)]
+                    [locals (make-mutable-id-hash)])
   (define unify? (unifier subst-map))
-  (unless (unify? (typeof term) type)
+  (unless (unify? (typeof term locals) type)
     (raise-syntax-error 'type-mismatch
                         (format "expect: `~a`, get: `~a`"
                                 (syntax->datum (subst type subst-map))
-                                (syntax->datum (subst (typeof term) subst-map)))
+                                (syntax->datum (subst (typeof term locals) subst-map)))
                         term)))
 
 (define (subst stx m)
@@ -69,18 +70,21 @@
      #`(A #,@(stx-map (λ (b) (subst b m)) #'(a ...)))]
     [name:id (hash-ref m (syntax->datum #'name) stx)]))
 
-(define (typeof stx [identifiers '()])
-  (define t (syntax-property (local-expand-expr stx identifiers) 'type))
-  (if t
-      t
-      (syntax-property* #`#,(gensym 'F)
-                        'type #'Type))
+(define (typeof stx [locals (make-mutable-id-hash)])
+  (syntax-parse stx
+    [x:id #:when (free-identifier? #'x)
+          (dict-ref locals stx)]
+    [x:id (syntax-property (local-expand-expr stx) 'type)]
+    [(x:id a* ...)
+     (syntax-parse (typeof #'x locals)
+       [(Pi ([x* : typ*] ...) result-ty)
+        #'result-ty])])
   )
 (define (typeof-expanded stx)
   (syntax->datum (typeof stx)))
 
-(define (local-expand-expr stx [ids '()])
-  (local-expand stx 'expression ids))
+(define (local-expand-expr stx [identifiers '()])
+  (local-expand stx 'expression identifiers))
 
 (define (syntax-property* stx . pairs)
   (match pairs

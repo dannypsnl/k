@@ -4,11 +4,13 @@
 
 (require syntax/parse/define
          (for-syntax racket/base
+                     racket/dict
                      syntax/parse
                      syntax/transformer
                      syntax/stx
                      "bindings.rkt"
-                     "core.rkt"))
+                     "core.rkt"
+                     "helper/id-hash.rkt"))
 
 (begin-for-syntax
   (define (syntax->compute-pattern pattern-stx)
@@ -31,7 +33,10 @@
        (define-syntax name (make-variable-like-transformer #'expr)))]
   [(_ (name:id p*:bindings) : ty
       clause*:def-clause ...)
-   (for ([pat* (syntax->list #'((clause*.pat* ...) ...))])
+   (for ([pat* (syntax->list #'((clause*.pat* ...) ...))]
+         [expr (syntax->list #'(clause*.expr ...))])
+     ; locals stores local identifiers to it's type
+     (define locals (make-mutable-id-hash))
      (define subst-map (make-hash))
      (define unify? (unifier subst-map))
      (for ([pat (syntax->list pat*)]
@@ -45,15 +50,37 @@
                                              (syntax->datum exp-ty)
                                              (syntax->datum pat-ty))
                                      pat))]
-         [(x:id p ...) #:when (bounded-identifier? #'x)
-                       (void)]
-         [x (void)])))
-   (with-syntax ([def #'(define-syntax-parser name
-                          [clause*.pat #'clause*.expr] ...)]
+         ; typeof x should be a Pi type here, then here are going to unify p*... with telescope of the Pi type
+         ; we should use telescope to bind type to free variable
+         [(x:id p* ...) #:when (bounded-identifier? #'x)
+                        (syntax-parse (typeof #'x)
+                          [(Pi ([x* : typ*] ...) _)
+                           (for ([p (syntax->list #'(p* ...))]
+                                 [ty (syntax->list #'(typ* ...))])
+                             (dict-set! locals p ty))]
+                          [_ (raise-syntax-error 'bad-pattern
+                                                 (format "~a is not a expandable constructor" #'x)
+                                                 pat)])]
+         ; bind pattern type to the free variable here
+         ; and brings the binding to the end for return type unification
+         [x:id (dict-set! locals #'x exp-ty)]
+         [_ (raise-syntax-error 'bad-pattern
+                                (format "pattern only allows to destruct on constructor")
+                                pat)]))
+     (check-type expr #'ty
+                 subst-map
+                 locals))
+   (with-syntax ([definition #'(define-syntax-parser name
+                                 [_:id (syntax-property*
+                                        #''name
+                                        'type
+                                        #'(Pi ([p*.name : p*.ty] ...) ty))]
+                                 [clause*.pat #'clause*.expr] ...)]
+                 ; FIXME: these should be implicit bindings
                  [(free-p-ty* ...)
                   (filter free-identifier? (syntax->list #'(p*.ty ...)))])
      #'(begin
          (void (let* ([free-p-ty* 'free-p-ty*] ...
                       [p*.name 'p*.name] ...)
                  ty))
-         def))])
+         definition))])
