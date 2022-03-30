@@ -30,7 +30,7 @@
     Mutiply @code{n} and @code{m}.
 }
 
-@defform[(Nat=? n m)]{
+#;@defform[(Nat=? n m)]{
     @code{n}, @code{m} are @code{Nat}, returns @code{Bool}.
     return @code{n} and @code{m} is same(@code{true}) or not(@code{false}).
 }
