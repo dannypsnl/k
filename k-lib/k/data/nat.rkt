@@ -2,7 +2,7 @@
 
 (provide (data-out Nat)
          + *
-         #;Nat=?)
+         Nat=?)
 
 (require k/data/bool)
 
@@ -18,7 +18,7 @@
   [z m => z]
   [(s n) m => (+ m (* n m))])
 
-#;(def (Nat=? [n m : Nat]) : Bool
+(def (Nat=? [n m : Nat]) : Bool
   [z z => true]
   [z (s m) => false]
   [(s n) z => false]

@@ -37,6 +37,8 @@
          [expr (syntax->list #'(clause*.expr ...))])
      ; locals stores local identifiers to it's type
      (define locals (make-mutable-id-hash))
+     ; itself type need to be stored for later check
+     (dict-set! locals #'name #'(Pi ([p*.name : p*.ty] ...) ty))
      (define subst-map (make-hash))
      (define unify? (unifier subst-map))
      (for ([pat (syntax->list pat*)]

@@ -77,9 +77,7 @@
     [x:id (syntax-property (local-expand-expr stx) 'type)]
     [(x:id a* ...)
      (syntax-parse (typeof #'x locals)
-       [(Pi ([x* : typ*] ...) result-ty)
-        #'result-ty])])
-  )
+       [(Pi ([x* : typ*] ...) result-ty) #'result-ty])]))
 (define (typeof-expanded stx)
   (syntax->datum (typeof stx)))
 
