@@ -65,6 +65,7 @@
          [_ (raise-syntax-error 'bad-pattern
                                 (format "pattern only allows to destruct on constructor")
                                 pat)]))
+     (println (list expr #'ty))
      (check-type expr #'ty
                  subst-map
                  locals))

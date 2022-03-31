@@ -17,9 +17,11 @@
 
 (define (unifier subst-map)
   (define (unify? t1 t2)
-    (unless (and (syntax? t1) (syntax? t2))
-      (error 'not-syntax
-             "~a or ~a" t1 t2))
+    (cond
+      [(and (syntax? t1) (syntax? t2)) (void)]
+      [(syntax? t1) (raise-syntax-error 'bad-unification "one arm is not syntax" t1)]
+      [(syntax? t2) (raise-syntax-error 'bad-unification "one arm is not syntax" t2)]
+      [else (error 'not-syntax "~a or ~a" t1 t2)])
     (syntax-parse (list t1 t2)
       [(a b) #:when (and (free-identifier? t1)
                          (free-identifier? t2))
@@ -74,7 +76,10 @@
   (syntax-parse stx
     [x:id #:when (free-identifier? #'x)
           (dict-ref locals stx)]
-    [x:id (syntax-property (local-expand-expr stx) 'type)]
+    [x:id (let ([ty (syntax-property (local-expand-expr stx) 'type)])
+            (if ty
+                ty
+                (raise-syntax-error 'no-type "" stx)))]
     [(x:id a* ...)
      (syntax-parse (typeof #'x locals)
        [(Pi ([x* : typ*] ...) result-ty) #'result-ty])]))

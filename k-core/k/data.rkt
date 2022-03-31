@@ -5,12 +5,14 @@
 
 (require syntax/parse/define
          (for-syntax racket/base
+                     racket/dict
                      racket/provide-transform
                      syntax/parse
                      syntax/parse/define
                      syntax/stx
                      "bindings.rkt"
-                     "core.rkt"))
+                     "core.rkt"
+                     "helper/id-hash.rkt"))
 
 (begin-for-syntax
   (define data-out-set (make-hash))
@@ -53,10 +55,26 @@
       ctor*:ctor-clause ...)
    (hash-set! data-out-set (syntax->datum #'name) (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
    (with-syntax ([def #'(define-syntax-parser name
+                          ; full case: users provide implicit arguments
+                          ; application with implicit must provides all implicits
+                          ; NOTE: maybe this is not required, but need some researching
+                          [(_ p*.full-name ...)
+                           (define subst-map (make-hash))
+                           (check-type #'p*.full-name (subst #'p*.full-ty subst-map)
+                                       subst-map)
+                           ...
+                           (with-syntax ([e (stx-map local-expand-expr #'(list p*.full-name ...))])
+                             (syntax-property* #'`(name ,@e)
+                                               'type (subst #'ty subst-map)))]
+                          ; normal case: users didn't provide implicit arguments
                           [(_ p*.name ...)
                            (define subst-map (make-hash))
+                           (define locals (make-mutable-id-hash))
+                           (dict-set! locals #'p*.implicit-name #'p*.implicit-ty)
+                           ...
                            (check-type #'p*.name (subst #'p*.ty subst-map)
-                                       subst-map)
+                                       subst-map
+                                       locals)
                            ...
                            (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
                              (syntax-property* #'`(name ,@e)
