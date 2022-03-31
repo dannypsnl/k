@@ -2,7 +2,8 @@
 
 (provide (data-out Nat)
          + *
-         Nat=?)
+         Nat=?
+         Nat<)
 
 (require k/data/bool)
 
@@ -23,6 +24,11 @@
   [z (s m) => false]
   [(s n) z => false]
   [(s n) (s m) => (Nat=? n m)])
+
+(def (Nat< [n m : Nat]) : Bool
+  [n z => false]
+  [z (s m) => true]
+  [(s n) (s m) => (Nat< n m)])
 
 (module+ test
   (require rackunit)
