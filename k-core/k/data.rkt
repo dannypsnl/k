@@ -8,10 +8,7 @@
          (for-syntax racket/base
                      racket/provide-transform
                      syntax/parse
-                     syntax/parse/define
-                     syntax/stx
-                     "bindings.rkt"
-                     "core.rkt"))
+                     "bindings.rkt"))
 
 (begin-for-syntax
   (define data-out-set (make-hash))
