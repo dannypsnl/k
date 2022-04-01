@@ -7,7 +7,7 @@
          local-expand-expr
          syntax-property*
          free-identifier?
-         bounded-identifier?
+         constructor?
          normalize)
 
 (require syntax/parse
@@ -91,6 +91,9 @@
     [(cons key (cons value rest))
      (syntax-property (apply syntax-property* (cons stx rest))
                       key value)]))
+
+(define (constructor? stx)
+  (bounded-identifier? stx))
 
 (define (free-identifier? id-stx)
   (and (identifier? id-stx)

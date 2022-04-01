@@ -15,7 +15,7 @@
 (begin-for-syntax
   (define (syntax->compute-pattern pattern-stx)
     (syntax-parse pattern-stx
-      [x:id #:when (bounded-identifier? #'x)
+      [x:id #:when (constructor? #'x)
             #'(~literal x)]
       [(x ...)
        (stx-map syntax->compute-pattern #'(x ...))]
@@ -80,14 +80,14 @@
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
        (syntax-parse pat
-         [x:id #:when (bounded-identifier? #'x)
+         [x:id #:when (constructor? #'x)
                (check-type #'x exp-ty
                            subst-map
                            locals)]
          ; typeof x should be a Pi type here, then here are going to unify p*... with telescope of the Pi type
          ; we should use telescope to bind type to free variable
          ; FIXME: I believe this won't work for nested destruct like `(suc (suc n))`
-         [(x:id p* ...) #:when (bounded-identifier? #'x)
+         [(x:id p* ...) #:when (constructor? #'x)
                         (syntax-parse (typeof #'x)
                           [(Pi ([x* : typ*] ...) _)
                            (for ([p (syntax->list #'(p* ...))]
