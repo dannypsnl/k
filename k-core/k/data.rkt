@@ -4,6 +4,7 @@
          data-out)
 
 (require syntax/parse/define
+         "def.rkt"
          (for-syntax racket/base
                      racket/provide-transform
                      syntax/parse
@@ -20,8 +21,7 @@
     #:datum-literals (:)
     (pattern [name:id : ty]
              #:attr def
-             #'(define-syntax-parser name
-                 [_:id (syntax-property* #''name 'type #'ty)]))
+             #'(def name : ty #:constructor))
     (pattern [name:id p*:bindings : ty]
              #:attr def
              #'(define-syntax-parser name

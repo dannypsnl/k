@@ -26,6 +26,12 @@
 
 (define-syntax-parser def
   #:datum-literals (:)
+  [(_ name:id : ty #:postulate)
+   #'(define-syntax-parser name [_:id (syntax-property* #''name 'type #'ty)])]
+  [(_ name:id : ty #:constructor)
+   #'(define-syntax-parser name [_:id (syntax-property* #''name
+                                                        'type #'ty
+                                                        'constructor #t)])]
   [(_ name:id : ty expr)
    (check-type #'expr (normalize #'ty))
    #'(begin
