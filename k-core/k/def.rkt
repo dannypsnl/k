@@ -15,7 +15,7 @@
 (begin-for-syntax
   (define (syntax->compute-pattern pattern-stx)
     (syntax-parse pattern-stx
-      [x:id #:when (bounded-identifier? #'x)
+      [x:id #:when (constructor? #'x)
             #'(~literal x)]
       [(x ...)
        (stx-map syntax->compute-pattern #'(x ...))]
@@ -26,11 +26,63 @@
 
 (define-syntax-parser def
   #:datum-literals (:)
+  [(_ name:id : ty #:postulate)
+   #'(define-syntax-parser name [_:id (syntax-property* #''name 'type #'ty)])]
+  [(_ name:id : ty #:constructor)
+   #'(define-syntax-parser name [_:id (syntax-property* #''name
+                                                        'type #'ty
+                                                        'constructor #t)])]
   [(_ name:id : ty expr)
    (check-type #'expr (normalize #'ty))
    #'(begin
        (void ty)
        (define-syntax name (make-variable-like-transformer #'expr)))]
+  [(_ (name:id p*:bindings) : ty #:postulate)
+   #'(define-syntax-parser name
+       [_:id
+        (syntax-property*
+         #''name
+         'type
+         #'(Pi ([p*.name : p*.ty] ...) ty))]
+       ; full case: users provide implicit arguments
+       ; application with implicit must provides all implicits
+       ; NOTE: maybe this is not required, but need some researching
+       [(_ p*.full-name ...)
+        (define subst-map (make-hash))
+        (check-type #'p*.full-name (subst #'p*.full-ty subst-map)
+                    subst-map)
+        ...
+        (with-syntax ([e (stx-map local-expand-expr #'(list p*.full-name ...))])
+          (syntax-property* #'`(name ,@e)
+                            'type (subst #'ty subst-map)))]
+       [(_:id p*.name ...)
+        (define subst-map (make-hash))
+        (define locals (make-mutable-id-hash))
+        (dict-set! locals #'p*.implicit-name #'p*.implicit-ty)
+        ...
+        (check-type #'p*.name (subst #'p*.ty subst-map)
+                    subst-map
+                    locals)
+        ...
+        (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
+          (syntax-property* #'`(name ,@e)
+                            'type (subst #'ty subst-map)))])]
+  [(_ (name:id p*:bindings) : ty #:constructor)
+   #'(define-syntax-parser name
+       [_:id
+        (syntax-property*
+         #''name
+         'type
+         #'(Pi ([p*.name : p*.ty] ...) ty))]
+       [(_:id p*.name ...)
+        (define subst-map (make-hash))
+        (check-type #'p*.name (subst #'p*.ty subst-map)
+                    subst-map)
+        ...
+        (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
+          (syntax-property* #'`(name ,@e)
+                            'type (subst #'ty subst-map)
+                            'constructor #t))])]
   [(_ (name:id p*:bindings) : ty
       clause*:def-clause ...)
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))]
@@ -43,14 +95,14 @@
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
        (syntax-parse pat
-         [x:id #:when (bounded-identifier? #'x)
+         [x:id #:when (constructor? #'x)
                (check-type #'x exp-ty
                            subst-map
                            locals)]
          ; typeof x should be a Pi type here, then here are going to unify p*... with telescope of the Pi type
          ; we should use telescope to bind type to free variable
          ; FIXME: I believe this won't work for nested destruct like `(suc (suc n))`
-         [(x:id p* ...) #:when (bounded-identifier? #'x)
+         [(x:id p* ...) #:when (constructor? #'x)
                         (syntax-parse (typeof #'x)
                           [(Pi ([x* : typ*] ...) _)
                            (for ([p (syntax->list #'(p* ...))]
