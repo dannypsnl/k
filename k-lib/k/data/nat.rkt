@@ -40,8 +40,8 @@
   (require rackunit)
 
   (check-equal? Nat 'Nat)
-  (check-equal? (typeof z) 'Nat)
-  (check-equal? (typeof s) '(Pi ([n : Nat]) Nat))
+  (check-equal? (typeof z) Nat)
+  (check-equal? (typeof s) (Pi ([n : Nat]) Nat))
   (check-equal? z 'z)
   (check-equal? (s (s (s z))) '(s (s (s z))))
 
@@ -53,11 +53,11 @@
 
   (check-equal? (+ z (s z)) '(s z))
   (check-equal? (+ (s z) (s z))
-                '(s (s z)))
+                (s (s z)))
   (check-equal? (+ (s (s z)) (s z))
-                '(s (s (s z))))
+                (s (s (s z))))
 
   (check-equal? (* (s (s z)) (s z))
-                '(s (s z)))
+                (s (s z)))
   (check-equal? (* (s (s z)) (s (s z)))
-                '(s (s (s (s z))))))
+                (s (s (s (s z))))))
