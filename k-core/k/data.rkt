@@ -24,20 +24,7 @@
              #'(def name : ty #:constructor))
     (pattern [name:id p*:bindings : ty]
              #:attr def
-             #'(define-syntax-parser name
-                 [_:id
-                  (syntax-property*
-                   #''name
-                   'type
-                   #'(Pi ([p*.name : p*.ty] ...) ty))]
-                 [(_:id p*.name ...)
-                  (define subst-map (make-hash))
-                  (check-type #'p*.name (subst #'p*.ty subst-map)
-                              subst-map)
-                  ...
-                  (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
-                    (syntax-property* #'`(name ,@e)
-                                      'type (subst #'ty subst-map)))]))))
+             #'(def (name [p*.name : p*.ty] ...) : ty #:constructor))))
 
 (define-syntax-parser data
   #:datum-literals (:)

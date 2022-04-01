@@ -37,6 +37,37 @@
    #'(begin
        (void ty)
        (define-syntax name (make-variable-like-transformer #'expr)))]
+  [(_ (name:id p*:bindings) : ty #:postulate)
+   #'(define-syntax-parser name
+       [_:id
+        (syntax-property*
+         #''name
+         'type
+         #'(Pi ([p*.name : p*.ty] ...) ty))]
+       [(_:id p*.name ...)
+        (define subst-map (make-hash))
+        (check-type #'p*.name (subst #'p*.ty subst-map)
+                    subst-map)
+        ...
+        (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
+          (syntax-property* #'`(name ,@e)
+                            'type (subst #'ty subst-map)))])]
+  [(_ (name:id p*:bindings) : ty #:constructor)
+   #'(define-syntax-parser name
+       [_:id
+        (syntax-property*
+         #''name
+         'type
+         #'(Pi ([p*.name : p*.ty] ...) ty))]
+       [(_:id p*.name ...)
+        (define subst-map (make-hash))
+        (check-type #'p*.name (subst #'p*.ty subst-map)
+                    subst-map)
+        ...
+        (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
+          (syntax-property* #'`(name ,@e)
+                            'type (subst #'ty subst-map)
+                            'constructor #t))])]
   [(_ (name:id p*:bindings) : ty
       clause*:def-clause ...)
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))]
