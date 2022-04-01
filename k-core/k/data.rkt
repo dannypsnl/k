@@ -6,7 +6,6 @@
 (require syntax/parse/define
          "def.rkt"
          (for-syntax racket/base
-                     racket/dict
                      racket/provide-transform
                      racket/dict
                      syntax/parse
