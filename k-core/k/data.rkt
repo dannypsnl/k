@@ -31,26 +31,15 @@
   [(_ name:id : ty
       ctor*:ctor-clause ...)
    (hash-set! data-out-set (syntax->datum #'name) (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
-   (with-syntax ([def #'(define-syntax-parser name
-                          [_:id (syntax-property* #''name 'type #'ty)])])
-     #'(begin
-         def
-         ctor*.def ...))]
+   #'(begin
+       (def name : ty #:postulate)
+       ctor*.def ...)]
   [(_ (name:id p*:bindings) : ty
       ctor*:ctor-clause ...)
    (hash-set! data-out-set (syntax->datum #'name) (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
-   (with-syntax ([def #'(define-syntax-parser name
-                          [(_ p*.name ...)
-                           (define subst-map (make-hash))
-                           (check-type #'p*.name (subst #'p*.ty subst-map)
-                                       subst-map)
-                           ...
-                           (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
-                             (syntax-property* #'`(name ,@e)
-                                               'type (subst #'ty subst-map)))])])
-     #'(begin
-         def
-         ctor*.def ...))])
+   #'(begin
+       (def (name [p*.name : p*.ty] ...) : ty #:postulate)
+       ctor*.def ...)])
 
 (define-syntax data-out
   (make-provide-transformer
