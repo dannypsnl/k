@@ -98,7 +98,9 @@
                       key value)]))
 
 (define (constructor? stx)
-  (bounded-identifier? stx))
+  (and (bounded-identifier? stx)
+       (syntax-property (local-expand-expr stx)
+                        'constructor)))
 
 (define (free-identifier? id-stx)
   (and (identifier? id-stx)
