@@ -22,7 +22,31 @@
       [x #'x]))
   (define-syntax-class def-clause
     (pattern [pat* ... => expr]
-             #:attr pat #`(_ #,@(stx-map syntax->compute-pattern #'(pat* ...))))))
+             #:attr pat #`(_ #,@(stx-map syntax->compute-pattern #'(pat* ...)))))
+
+  (define (on-pattern pat exp-ty locals subst-map)
+    (syntax-parse pat
+      [x:id #:when (constructor? #'x)
+            (check-type #'x exp-ty
+                        subst-map
+                        locals)]
+      ; typeof x should be a Pi type here, then here are going to unify p*... with telescope of the Pi type
+      ; we should use telescope to bind type to free variable
+      [(x:id p* ...) #:when (constructor? #'x)
+                     (syntax-parse (typeof #'x)
+                       [(Pi ([x* : typ*] ...) _)
+                        (for ([p (syntax->list #'(p* ...))]
+                              [ty (syntax->list #'(typ* ...))])
+                          (on-pattern p ty locals subst-map))]
+                       [_ (raise-syntax-error 'bad-pattern
+                                              "not an expandable constructor"
+                                              #'x)])]
+      ; bind pattern type to the free variable here
+      ; and brings the binding to the end for return type unification
+      [x:id (dict-set! locals #'x exp-ty)]
+      [_ (raise-syntax-error 'bad-pattern
+                             (format "pattern only allows to destruct on constructor")
+                             pat)])))
 
 (define-syntax-parser def
   #:datum-literals (:)
@@ -80,29 +104,7 @@
      (define subst-map (make-hash))
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
-       (syntax-parse pat
-         [x:id #:when (constructor? #'x)
-               (check-type #'x exp-ty
-                           subst-map
-                           locals)]
-         ; typeof x should be a Pi type here, then here are going to unify p*... with telescope of the Pi type
-         ; we should use telescope to bind type to free variable
-         ; FIXME: I believe this won't work for nested destruct like `(suc (suc n))`
-         [(x:id p* ...) #:when (constructor? #'x)
-                        (syntax-parse (typeof #'x)
-                          [(Pi ([x* : typ*] ...) _)
-                           (for ([p (syntax->list #'(p* ...))]
-                                 [ty (syntax->list #'(typ* ...))])
-                             (dict-set! locals p ty))]
-                          [_ (raise-syntax-error 'bad-pattern
-                                                 (format "~a is not a expandable constructor" #'x)
-                                                 pat)])]
-         ; bind pattern type to the free variable here
-         ; and brings the binding to the end for return type unification
-         [x:id (dict-set! locals #'x exp-ty)]
-         [_ (raise-syntax-error 'bad-pattern
-                                (format "pattern only allows to destruct on constructor")
-                                pat)]))
+       (on-pattern pat exp-ty locals subst-map))
      (check-type expr #'ty
                  subst-map
                  locals))
