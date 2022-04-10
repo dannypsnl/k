@@ -30,6 +30,12 @@
   [z (s m) => true]
   [(s n) (s m) => (Nat< n m)])
 
+(def (fib [n : Nat]) : Nat
+  [z => z]
+  [(s z) => (s z)]
+  [(s (s n)) => (+ (fib (s n))
+                   (fib n))])
+
 (module+ test
   (require rackunit)
 
