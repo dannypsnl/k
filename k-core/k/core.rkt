@@ -32,14 +32,13 @@
       [(a b) #:when (free-identifier? t1)
              (define bounded? (hash-ref subst-map (syntax->datum #'a) #f))
              (if bounded?
-                 (begin
-                   (if (unify? (hash-ref subst-map (syntax->datum #'a)) t2)
-                       #t
-                       (raise-syntax-error 'cannot-unified
-                                           (format "`~a` with `~a`"
-                                                   (syntax->datum (hash-ref subst-map (syntax->datum #'a)))
-                                                   (syntax->datum t2))
-                                           t2)))
+                 (if (unify? (hash-ref subst-map (syntax->datum #'a)) t2)
+                     #t
+                     (raise-syntax-error 'cannot-unified
+                                         (format "`~a` with `~a`"
+                                                 (syntax->datum (hash-ref subst-map (syntax->datum #'a)))
+                                                 (syntax->datum t2))
+                                         t2))
                  (begin
                    (hash-set! subst-map (syntax->datum #'a) #'b)
                    #t))]
