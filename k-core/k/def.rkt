@@ -88,8 +88,7 @@
         ...
         (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
           (syntax-property* #'`(name ,@e)
-                            'type (subst #'ty subst-map)
-                            props ...))])]
+                            'type (subst #'ty subst-map)))])]
   [(_ (name:id p*:bindings) : ty #:constructor) #'(def (name [p*.name : p*.ty] ...) : ty #:postulate 'constructor #t)]
   [(_ (name:id p*:bindings) : ty
       clause*:def-clause ...)

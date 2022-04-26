@@ -78,7 +78,7 @@
     [x:id (let ([ty (syntax-property (local-expand-expr stx) 'type)])
             (if ty
                 ty
-                (raise-syntax-error 'no-type "" stx)))]
+                (raise-syntax-error 'no-type (format "~a has no type" stx) stx)))]
     [(x:id a* ...)
      (syntax-parse (typeof #'x locals)
        [(Pi ([x* : typ*] ...) result-ty) #'result-ty])]))
