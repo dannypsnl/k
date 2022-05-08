@@ -85,17 +85,22 @@
          [expr (syntax->list #'(clause*.expr ...))])
      ; locals stores local identifiers to it's type
      (define locals (make-mutable-id-hash))
-     ; itself type need to be stored for later check
+     ; itself type need to be stored for later pattern check
      (dict-set! locals #'name #'(Pi ([p*.name : p*.ty] ...) ty))
-     (stx-map (lambda (k v) (dict-set! locals k v)) #'(p*.implicit-name ...) #'(p*.implicit-ty ...))
-     (println (dict->list locals))
      (define subst-map (make-hash))
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
        (on-pattern pat exp-ty locals subst-map))
-     (check-type expr #'ty
-                 subst-map
-                 locals))
+     (define binds (make-hash))
+     ; store implicit arguments
+     (stx-map (lambda (k v)
+                (hash-set! binds
+                           (syntax->datum k)
+                           (syntax-property k 'type v)))
+      #'(p*.implicit-name ...) #'(p*.implicit-ty ...))
+     (println (subst #'ty binds))
+     ; check pattern's body has correct type
+     (check-type expr (subst #'ty binds) subst-map))
    (with-syntax (; FIXME: these should be implicit bindings
                  [(free-p-ty* ...)
                   (filter free-identifier? (syntax->list #'(p*.full-ty ...)))])
