@@ -1,5 +1,4 @@
 #lang racket/base
-
 (provide def)
 
 (require syntax/parse/define
@@ -77,18 +76,8 @@
           (syntax-property* #'`(name ,@e)
                             'type (subst #'ty subst-map)
                             props ...))]
-       [(_:id p*.name ...)
-        (define subst-map (make-hash))
-        (define locals (make-mutable-id-hash))
-        (dict-set! locals #'p*.implicit-name #'p*.implicit-ty)
-        ...
-        (check-type #'p*.name (subst #'p*.ty subst-map)
-                    subst-map
-                    locals)
-        ...
-        (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
-          (syntax-property* #'`(name ,@e)
-                            'type (subst #'ty subst-map)))])]
+       ; FIXME: might not correct implementation
+       [(_:id p*.name ...) #'(name p*.full-name ...)])]
   [(_ (name:id p*:bindings) : ty #:constructor) #'(def (name [p*.name : p*.ty] ...) : ty #:postulate 'constructor #t)]
   [(_ (name:id p*:bindings) : ty
       clause*:def-clause ...)
@@ -98,6 +87,8 @@
      (define locals (make-mutable-id-hash))
      ; itself type need to be stored for later check
      (dict-set! locals #'name #'(Pi ([p*.name : p*.ty] ...) ty))
+     (stx-map (lambda (k v) (dict-set! locals k v)) #'(p*.implicit-name ...) #'(p*.implicit-ty ...))
+     (println (dict->list locals))
      (define subst-map (make-hash))
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
@@ -105,17 +96,17 @@
      (check-type expr #'ty
                  subst-map
                  locals))
-   (with-syntax ([definition #'(define-syntax-parser name
-                                 [_:id (syntax-property*
-                                        #''name
-                                        'type
-                                        #'(Pi ([p*.name : p*.ty] ...) ty))]
-                                 [clause*.pat #'clause*.expr] ...)]
-                 ; FIXME: these should be implicit bindings
+   (with-syntax (; FIXME: these should be implicit bindings
                  [(free-p-ty* ...)
-                  (filter free-identifier? (syntax->list #'(p*.ty ...)))])
+                  (filter free-identifier? (syntax->list #'(p*.full-ty ...)))])
      #'(begin
          (void (let* ([free-p-ty* 'free-p-ty*] ...
                       [p*.name 'p*.name] ...)
                  ty))
-         definition))])
+         ;;; computation definition
+         (define-syntax-parser name
+           [_:id (syntax-property*
+                  #''name
+                  'type
+                  #'(Pi ([p*.name : p*.ty] ...) ty))]
+           [clause*.pat #'clause*.expr] ...)))])
