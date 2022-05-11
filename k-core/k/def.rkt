@@ -1,5 +1,4 @@
 #lang racket/base
-
 (provide def)
 
 (require syntax/parse/define
@@ -22,7 +21,7 @@
       [x #'x]))
   (define-syntax-class def-clause
     (pattern [pat* ... => expr]
-             #:attr pat #`(_ #,@(stx-map syntax->compute-pattern #'(pat* ...)))))
+      #:attr pat #`(_ #,@(stx-map syntax->compute-pattern #'(pat* ...)))))
 
   (define (on-pattern pat exp-ty locals subst-map)
     (syntax-parse pat
@@ -65,42 +64,56 @@
          'type
          #'(Pi ([p*.name : p*.ty] ...) ty)
          props ...)]
-       [(_:id p*.name ...)
+       ; full case: users provide implicit arguments
+       ; application with implicit must provides all implicits
+       ; NOTE: maybe this is not required, but need some researching
+       [(_ p*.full-name ...)
         (define subst-map (make-hash))
-        (check-type #'p*.name (subst #'p*.ty subst-map)
+        (check-type #'p*.full-name (subst #'p*.full-ty subst-map)
                     subst-map)
         ...
-        (with-syntax ([e (stx-map local-expand-expr #'(list p*.name ...))])
+        (with-syntax ([e (stx-map local-expand-expr #'(list p*.full-name ...))])
           (syntax-property* #'`(name ,@e)
                             'type (subst #'ty subst-map)
-                            props ...))])]
+                            props ...))]
+       ; FIXME: might not correct implementation
+       [(_:id p*.name ...) #'(name p*.full-name ...)])]
   [(_ (name:id p*:bindings) : ty #:constructor) #'(def (name [p*.name : p*.ty] ...) : ty #:postulate 'constructor #t)]
   [(_ (name:id p*:bindings) : ty
       clause*:def-clause ...)
+   (define binds (make-hash))
+   ; store implicit arguments
+   (stx-map (lambda (k v)
+              (hash-set! binds
+                         (syntax->datum k)
+                         (syntax-property k 'type v)))
+            #'(p*.full-name ...) #'(p*.full-ty ...))
+
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))]
          [expr (syntax->list #'(clause*.expr ...))])
      ; locals stores local identifiers to it's type
      (define locals (make-mutable-id-hash))
-     ; itself type need to be stored for later check
-     (dict-set! locals #'name #'(Pi ([p*.name : p*.ty] ...) ty))
+     ; itself type need to be stored for later pattern check
+     (dict-set! locals #'name #`(Pi ([p*.name : p*.ty] ...) #,(subst #'ty binds)))
      (define subst-map (make-hash))
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
        (on-pattern pat exp-ty locals subst-map))
-     (check-type expr #'ty
-                 subst-map
+     ; check pattern's body has correct type
+     (check-type expr (subst #'ty binds) subst-map
                  locals))
-   (with-syntax ([definition #'(define-syntax-parser name
-                                 [_:id (syntax-property*
-                                        #''name
-                                        'type
-                                        #'(Pi ([p*.name : p*.ty] ...) ty))]
-                                 [clause*.pat #'clause*.expr] ...)]
+   (with-syntax ([return-type (subst #'ty binds)]
                  ; FIXME: these should be implicit bindings
                  [(free-p-ty* ...)
-                  (filter free-identifier? (syntax->list #'(p*.ty ...)))])
+                  (filter free-identifier? (syntax->list #'(p*.full-ty ...)))])
      #'(begin
          (void (let* ([free-p-ty* 'free-p-ty*] ...
                       [p*.name 'p*.name] ...)
-                 ty))
-         definition))])
+                 return-type))
+         ;;; computation definition
+         (define-syntax-parser name
+           [_:id (syntax-property*
+                  #''name
+                  'type
+                  #'(Pi ([p*.name : p*.ty] ...) return-type))]
+           [clause*.pat #'clause*.expr] ...)))])

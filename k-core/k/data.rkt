@@ -37,7 +37,7 @@
       ctor*:ctor-clause ...)
    (dict-set! data-out-set #'name (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
    #'(begin
-       (def (name [p*.name : p*.ty] ...) : ty #:postulate)
+       (def (name [p*.full-name : p*.full-ty] ...) : ty #:postulate)
        ctor*.def ...)])
 
 (define-syntax data-out

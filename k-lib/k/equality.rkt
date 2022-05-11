@@ -4,8 +4,10 @@
          symm
          trans)
 
-(data (≡ [a b : A]) : Type
-      [refl : (≡ a a)])
+(data (≡ {A : Type}
+         [a b : A])
+      : Type
+      [refl : (≡ A a a)])
 
 #|
 TODO:
@@ -23,8 +25,8 @@ TODO:
 ; Symmetry
 (def (symm {A : Type}
            [x y : A]
-           [p : (≡ x y)])
-  : (≡ y x)
+           [p : (≡ A x y)])
+  : (≡ A y x)
   [A x y refl => refl])
 
 ; Transitivity
