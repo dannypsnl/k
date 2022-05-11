@@ -87,7 +87,7 @@
               (hash-set! binds
                          (syntax->datum k)
                          (syntax-property k 'type v)))
-            #'(p*.implicit-name ...) #'(p*.implicit-ty ...))
+            #'(p*.full-name ...) #'(p*.full-ty ...))
 
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))]
          [expr (syntax->list #'(clause*.expr ...))])
@@ -108,7 +108,7 @@
      #'(begin
          (void (let* ([free-p-ty* 'free-p-ty*] ...
                       [p*.name 'p*.name] ...)
-                 ty))
+                 return-type))
          ;;; computation definition
          (define-syntax-parser name
            [_:id (syntax-property*

@@ -1,8 +1,8 @@
 #lang k/base
 (provide (data-out ≡)
          #;cong
-         #;symm
-         #;trans)
+         symm
+         trans)
 
 (data (≡ {A : Type}
          [a b : A])
@@ -30,9 +30,9 @@ TODO:
   [A x y refl => refl])
 
 ; Transitivity
-#;(def (trans {A : Type}
-              [x y z : A]
-              [p : (≡ x y)]
-              [q : (≡ y z)])
+(def (trans {A : Type}
+            [x y z : A]
+            [p : (≡ x y)]
+            [q : (≡ y z)])
     : (≡ x z)
     [A x y z refl refl => refl])
