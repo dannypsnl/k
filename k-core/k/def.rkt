@@ -100,7 +100,8 @@
            [exp-ty (syntax->list #'(p*.ty ...))])
        (on-pattern pat exp-ty locals subst-map))
      ; check pattern's body has correct type
-     (check-type expr (subst #'ty binds) subst-map))
+     (check-type expr (subst #'ty binds) subst-map
+                 locals))
    (with-syntax ([return-type (subst #'ty binds)]
                  ; FIXME: these should be implicit bindings
                  [(free-p-ty* ...)
