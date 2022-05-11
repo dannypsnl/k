@@ -21,7 +21,7 @@
       [x #'x]))
   (define-syntax-class def-clause
     (pattern [pat* ... => expr]
-             #:attr pat #`(_ #,@(stx-map syntax->compute-pattern #'(pat* ...)))))
+      #:attr pat #`(_ #,@(stx-map syntax->compute-pattern #'(pat* ...)))))
 
   (define (on-pattern pat exp-ty locals subst-map)
     (syntax-parse pat
@@ -81,27 +81,28 @@
   [(_ (name:id p*:bindings) : ty #:constructor) #'(def (name [p*.name : p*.ty] ...) : ty #:postulate 'constructor #t)]
   [(_ (name:id p*:bindings) : ty
       clause*:def-clause ...)
+   (define binds (make-hash))
+   ; store implicit arguments
+   (stx-map (lambda (k v)
+              (hash-set! binds
+                         (syntax->datum k)
+                         (syntax-property k 'type v)))
+            #'(p*.implicit-name ...) #'(p*.implicit-ty ...))
+
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))]
          [expr (syntax->list #'(clause*.expr ...))])
      ; locals stores local identifiers to it's type
      (define locals (make-mutable-id-hash))
      ; itself type need to be stored for later pattern check
-     (dict-set! locals #'name #'(Pi ([p*.name : p*.ty] ...) ty))
+     (dict-set! locals #'name #'(Pi ([p*.name : p*.ty] ...) (subst #'ty binds)))
      (define subst-map (make-hash))
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
        (on-pattern pat exp-ty locals subst-map))
-     (define binds (make-hash))
-     ; store implicit arguments
-     (stx-map (lambda (k v)
-                (hash-set! binds
-                           (syntax->datum k)
-                           (syntax-property k 'type v)))
-      #'(p*.implicit-name ...) #'(p*.implicit-ty ...))
-     (println (subst #'ty binds))
      ; check pattern's body has correct type
      (check-type expr (subst #'ty binds) subst-map))
-   (with-syntax (; FIXME: these should be implicit bindings
+   (with-syntax ([return-type (subst #'ty binds)]
+                 ; FIXME: these should be implicit bindings
                  [(free-p-ty* ...)
                   (filter free-identifier? (syntax->list #'(p*.full-ty ...)))])
      #'(begin
@@ -113,5 +114,5 @@
            [_:id (syntax-property*
                   #''name
                   'type
-                  #'(Pi ([p*.name : p*.ty] ...) ty))]
+                  #'(Pi ([p*.name : p*.ty] ...) return-type))]
            [clause*.pat #'clause*.expr] ...)))])
