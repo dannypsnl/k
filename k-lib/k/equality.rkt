@@ -34,5 +34,5 @@ TODO:
             [x y z : A]
             [p : (≡ x y)]
             [q : (≡ y z)])
-    : (≡ x z)
-    [A x y z refl refl => refl])
+  : (≡ x z)
+  [A x y z refl refl => refl])
