@@ -94,7 +94,7 @@
      ; locals stores local identifiers to it's type
      (define locals (make-mutable-id-hash))
      ; itself type need to be stored for later pattern check
-     (dict-set! locals #'name #'(Pi ([p*.name : p*.ty] ...) (subst #'ty binds)))
+     (dict-set! locals #'name #`(Pi ([p*.name : p*.ty] ...) #,(subst #'ty binds)))
      (define subst-map (make-hash))
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
