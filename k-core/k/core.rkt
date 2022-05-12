@@ -45,9 +45,13 @@
                    (hash-set! subst-map (syntax->datum #'a) #'b)
                    #t))]
       [((a ...) (b ...))
-       (andmap unify?
-               (syntax->list #'(a ...))
-               (syntax->list #'(b ...)))]
+       (define al (syntax->list #'(a ...)))
+       (define bl (syntax->list #'(b ...)))
+       (unless (= (length al) (length bl))
+         (raise-syntax-error 'bad-unification
+                             ""
+                             t2))
+       (andmap unify? al bl)]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
   unify?)
 
@@ -68,7 +72,9 @@
 (define (subst stx m)
   (syntax-parse stx
     [(A a ...)
-     #`(A #,@(stx-map (λ (b) (subst b m)) #'(a ...)))]
+     ; The source location of first syntax takes by quasisyntax/loc will be the second constructed syntax's source location
+     (quasisyntax/loc stx
+       (A #,@(stx-map (λ (b) (subst b m)) #'(a ...))))]
     [name:id (hash-ref m (syntax->datum #'name) stx)]))
 
 (define (typeof stx [locals (make-mutable-id-hash)])
