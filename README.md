@@ -5,6 +5,10 @@
 [![Documentation](https://img.shields.io/badge/docs-published-blue)](https://docs.racket-lang.org/k/)
 [![Note](https://img.shields.io/badge/note-published-blue)](https://racket-taiwan.org/k/notes/)
 
+> **Warning**
+> This is a developing project
+
+
 K is a theorem prover based on Racket ecosystem, interact with Racket in useful way is the major purpose of the project.
 
 ### Installation
