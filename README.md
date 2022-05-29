@@ -3,7 +3,7 @@
 [![Test](https://github.com/racket-tw/k/actions/workflows/test.yml/badge.svg)](https://github.com/racket-tw/k/actions/workflows/test.yml)
 [![Coverage Status](https://coveralls.io/repos/github/racket-tw/k/badge.svg?branch=develop)](https://coveralls.io/github/racket-tw/k?branch=develop)
 [![Documentation](https://img.shields.io/badge/docs-published-blue)](https://docs.racket-lang.org/k/)
-[![Note](https://img.shields.io/badge/note-published-blue)](https://racket-taiwan.org/k/notes/)
+[![Note](https://img.shields.io/badge/note-published-blue)](https://racket-tw.github.io/k/notes/)
 
 > **Warning**
 > This is a developing project
