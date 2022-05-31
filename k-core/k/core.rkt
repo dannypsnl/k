@@ -49,7 +49,8 @@
        (define bl (syntax->list #'(b ...)))
        (unless (= (length al) (length bl))
          (raise-syntax-error 'bad-unification
-                             ""
+                             (format "mismatched length for two term, ~a and ~a"
+                                     t1 t2)
                              t2))
        (andmap unify? al bl)]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
