@@ -19,11 +19,11 @@
   (define-syntax-class ctor-clause
     #:datum-literals (:)
     (pattern [name:id : ty]
-             #:attr def
-             #'(def name : ty #:constructor))
+      #:attr def
+      #'(def name : ty #:constructor))
     (pattern [name:id p*:bindings : ty]
-             #:attr def
-             #'(def (name [p*.name : p*.ty] ...) : ty #:constructor))))
+      #:attr def
+      #'(def (name p*.b* ...) : ty #:constructor))))
 
 (define-syntax-parser data
   #:datum-literals (:)
@@ -37,7 +37,7 @@
       ctor*:ctor-clause ...)
    (dict-set! data-out-set #'name (map id->export (cons #'name (syntax->list #'(ctor*.name ...)))))
    #'(begin
-       (def (name [p*.full-name : p*.full-ty] ...) : ty #:postulate)
+       (def (name p*.b* ...) : ty #:postulate)
        ctor*.def ...)])
 
 (define-syntax data-out
