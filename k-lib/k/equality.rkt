@@ -2,7 +2,7 @@
 (provide (data-out ≡)
          #;cong
          symm
-         trans)
+         #;trans)
 
 (data (≡ {A : Type}
          [a b : A])
@@ -25,12 +25,12 @@ TODO:
 ; Symmetry
 (def (symm {A : Type}
            [x y : A]
-           [p : (≡ A x y)])
-  : (≡ A y x)
+           [p : (≡ x y)])
+  : (≡ y x)
   [A x y refl => refl])
 
 ; Transitivity
-(def (trans {A : Type}
+#;(def (trans {A : Type}
             [x y z : A]
             [p : (≡ x y)]
             [q : (≡ y z)])

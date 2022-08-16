@@ -8,7 +8,7 @@
 
 (module+ test
   (require rackunit
-           k/data/nat)
+           k/data/bool)
 
   (check-equal? nil 'nil)
-  (check-equal? (:: z nil) '(:: z nil)))
+  (check-equal? (:: true nil) '(:: true nil)))

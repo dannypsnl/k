@@ -8,7 +8,8 @@
          syntax-property*
          free-identifier?
          constructor?
-         normalize)
+         normalize
+         normalize-implicit-form)
 
 (require syntax/parse
          syntax/stx
@@ -58,6 +59,9 @@
 
 (define (normalize stx)
   (datum->syntax stx (eval (local-expand-expr stx)) stx))
+(define (normalize-implicit-form ty-stx)
+  ((compose last syntax->list local-expand-expr)
+   ty-stx))
 
 (define (check-type term type
                     [subst-map (make-hash)]

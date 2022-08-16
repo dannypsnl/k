@@ -1,14 +1,12 @@
 #lang racket/base
-
 (provide check)
-
 (require syntax/parse/define
+         "def.rkt"
          (for-syntax racket/base
-                     "core.rkt"))
+                     racket/syntax))
 
 (define-syntax-parser check
   [(_ ty expr)
-   (check-type #'expr (normalize #'ty))
-   #'(begin
-       (void ty)
-       expr)])
+   (with-syntax ([name (generate-temporary)])
+     #'(def name : ty
+         expr))])
