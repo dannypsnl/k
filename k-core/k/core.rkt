@@ -8,20 +8,24 @@
          syntax-property*
          free-identifier?
          constructor?
-         normalize
-         normalize-implicit-form)
+         normalize)
 
 (require syntax/parse
          syntax/stx
          racket/dict
+         "helper/stx-util.rkt"
          "helper/id-hash.rkt")
 
 (define (unifier subst-map)
   (define (unify? t1 t2)
     (cond
       [(and (syntax? t1) (syntax? t2)) (void)]
-      [(syntax? t1) (raise-syntax-error 'bad-unification "one arm is not syntax" t1)]
-      [(syntax? t2) (raise-syntax-error 'bad-unification "one arm is not syntax" t2)]
+      [(syntax? t1) (raise-syntax-error 'bad-unification
+                                        (format "~a is not syntax" t2)
+                                        t1)]
+      [(syntax? t2) (raise-syntax-error 'bad-unification
+                                        (format "~a is not syntax" t1)
+                                        t2)]
       [else (error 'not-syntax "~a or ~a" t1 t2)])
     (syntax-parse (list t1 t2)
       [(a b) #:when (and (free-identifier? t1)
@@ -46,22 +50,30 @@
                    (hash-set! subst-map (syntax->datum #'a) #'b)
                    #t))]
       [((a ...) (b ...))
-       (define al (syntax->list #'(a ...)))
-       (define bl (syntax->list #'(b ...)))
-       (unless (= (length al) (length bl))
-         (raise-syntax-error 'bad-unification
-                             (format "mismatched length for two term, ~a and ~a"
-                                     t1 t2)
-                             t2))
-       (andmap unify? al bl)]
+       (define (recheck a b)
+         (unless (stx-length=? a b)
+           (raise-syntax-error 'bad-unification
+                               (format "mismatched length for two term, ~a and ~a"
+                                       t1 t2)
+                               t2)))
+
+       (cond
+         [(stx-length=? #'(a ...) #'(b ...))
+          (stx-andmap unify? #'(a ...) #'(b ...))]
+         ; have to try expand when length mismatched, this is because sometimes one of them is implicit applied form
+         [(stx-length<=? #'(a ...) #'(b ...))
+          (define ta (normalize #'(a ...)))
+          (recheck ta #'(b ...))
+          (stx-andmap unify? ta #'(b ...))]
+         [(stx-length>=? #'(a ...) #'(b ...))
+          (define tb (normalize #'(b ...)))
+          (recheck #'(a ...) tb)
+          (stx-andmap unify? #'(a ...) tb)])]
       [(a b) (equal? (syntax->datum t1) (syntax->datum t2))]))
   unify?)
 
 (define (normalize stx)
   (datum->syntax stx (eval (local-expand-expr stx)) stx))
-(define (normalize-implicit-form ty-stx)
-  ((compose last syntax->list local-expand-expr)
-   ty-stx))
 
 (define (check-type term type
                     [subst-map (make-hash)]
@@ -86,10 +98,9 @@
   (syntax-parse stx
     [x:id #:when (free-identifier? #'x)
           (dict-ref locals stx)]
-    [x:id (let ([ty (syntax-property (local-expand-expr stx) 'type)])
-            (if ty
-                ty
-                (raise-syntax-error 'no-type (format "~a has no type" stx) stx)))]
+    [x:id #:when (syntax-property (local-expand-expr stx) 'type)
+          (syntax-property (local-expand-expr stx) 'type)]
+    [x:id (raise-syntax-error 'no-type (format "~a has no type" stx) stx)]
     [(x:id a* ...)
      (syntax-parse (typeof #'x locals)
        [(Pi ([x* : typ*] ...) result-ty) #'result-ty])]))

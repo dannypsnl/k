@@ -1,8 +1,8 @@
 #lang racket/base
 (provide bindings)
 
-(require syntax/parse
-         syntax/stx
+(require syntax/stx
+         syntax/parse
          syntax/parse/class/paren-shape)
 
 (define-splicing-syntax-class bindings

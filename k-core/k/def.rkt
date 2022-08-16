@@ -2,12 +2,14 @@
 (provide def)
 (require syntax/parse/define
          (for-syntax racket/base
+                     racket/list
                      racket/dict
                      syntax/parse
                      syntax/transformer
                      syntax/stx
                      "bindings.rkt"
                      "core.rkt"
+                     "helper/stx-util.rkt"
                      "helper/id-hash.rkt"))
 
 (begin-for-syntax
@@ -56,67 +58,84 @@
        (void ty)
        (define-syntax name (make-variable-like-transformer #'expr)))]
   [(_ (name:id p*:bindings) : ty #:postulate props ...)
-   #'(define-syntax-parser name
-       [_:id
-        (syntax-property*
-         #''name
-         'type
-         #'(Pi ([p*.name : p*.ty] ...) ty)
-         props ...)]
-       ; FIXME: might not correct implementation
-       [(_:id p*.name ...) #''(name p*.full-name ...)]
-       ; full case: users provide implicit arguments
-       ; application with implicit must provides all implicits
-       ; NOTE: maybe this is not required, but need some researching
-       [(_:id p*.full-name ...)
-        (define subst-map (make-hash))
-        (check-type #'p*.full-name (subst #'p*.full-ty subst-map)
-                    subst-map)
-        ...
-        (with-syntax ([e (stx-map local-expand-expr #'(list p*.full-name ...))])
-          (syntax-property* #'`(name ,@e)
-                            'type (subst #'ty subst-map)
-                            props ...))])]
+   (with-syntax ([id-case #'[_:id
+                             (syntax-property*
+                              #''name
+                              'type
+                              #'(Pi ([p*.name : p*.ty] ...) ty)
+                              props ...)]]
+                 ; implicit form
+                 [implicit-case #'[(_:id p*.name ...)
+                                   (define (normalize-implicit-form ty-stx)
+                                     ((compose last syntax->list local-expand-expr)
+                                      ty-stx))
+
+                                   (define binds (make-hash))
+                                   ; store implicit arguments
+                                   (stx-map (lambda (implicit-argument implicit-argument-ty)
+                                              (hash-set! binds
+                                                         (syntax->datum implicit-argument)
+                                                         (syntax-property implicit-argument 'type implicit-argument-ty)))
+                                            #'(p*.full-name ...) #'(p*.full-ty ...))
+
+                                   (define expanded (normalize-implicit-form #''(name p*.full-name ...)))
+
+                                   (println (subst expanded binds))
+
+                                   (subst expanded binds)]]
+                 ; full case: users provide implicit arguments
+                 ; application with implicit must provides all implicits
+                 ; NOTE: maybe this is not required, but need some researching
+                 [full-apply-case #'[(_:id p*.full-name ...)
+                                     (define locals (make-mutable-id-hash))
+                                     (when (syntax-property #'p*.full-name 'type)
+                                       (dict-set! locals #'p*.full-name (syntax-property #'p*.full-name 'type)))
+                                     ...
+
+                                     (define subst-map (make-hash))
+                                     (check-type #'p*.full-name (subst #'p*.full-ty subst-map)
+                                                 subst-map locals)
+                                     ...
+
+                                     (syntax-property* #'`(name ,p*.full-name ...)
+                                                       'type (subst #'ty subst-map)
+                                                       props ...)]])
+     (if (stx-length=? #'(p*.name ...) #'(p*.full-name ...))
+         #'(define-syntax-parser name
+             id-case
+             full-apply-case)
+         #'(define-syntax-parser name
+             id-case
+             implicit-case
+             full-apply-case)))]
   [(_ (name:id p*:bindings) : ty #:constructor) #'(def (name [p*.name : p*.ty] ...) : ty #:postulate 'constructor #t)]
-  [(_ (name:id p*:bindings) : ty
+  [(_ (name:id p*:bindings) : ret-ty
       clause*:def-clause ...)
-   (define binds (make-hash))
-   ; store implicit arguments
-   (stx-map (lambda (implicit-argument implicit-argument-ty)
-              (hash-set! binds
-                         (syntax->datum implicit-argument)
-                         (syntax-property implicit-argument 'type implicit-argument-ty)))
-            #'(p*.full-name ...) #'(p*.full-ty ...))
-
-   (define expanded-return-ty (normalize-implicit-form #'ty))
-   (define well-return-ty (subst expanded-return-ty binds))
-
    (for ([pat* (syntax->list #'((clause*.pat* ...) ...))]
          [expr (syntax->list #'(clause*.expr ...))])
      ; locals stores local identifiers to it's type
      (define locals (make-mutable-id-hash))
      ; itself type need to be stored for later pattern check
-     (dict-set! locals #'name #`(Pi ([p*.name : p*.ty] ...) #,well-return-ty))
+     (dict-set! locals #'name #`(Pi ([p*.name : p*.ty] ...) ret-ty))
      (define subst-map (make-hash))
      (for ([pat (syntax->list pat*)]
            [exp-ty (syntax->list #'(p*.ty ...))])
        (on-pattern pat exp-ty locals subst-map))
      ; check pattern's body has correct type
-     (check-type expr well-return-ty subst-map
+     (check-type expr #'ret-ty subst-map
                  locals))
 
-   (with-syntax ([return-type well-return-ty]
-                 ; FIXME: these should be implicit bindings
+   (with-syntax (; FIXME: these should be implicit bindings
                  [(free-p-ty* ...)
                   (filter free-identifier? (syntax->list #'(p*.full-ty ...)))])
      #'(begin
          (void (let* ([free-p-ty* 'free-p-ty*] ...
                       [p*.name 'p*.name] ...)
-                 return-type))
+                 ret-ty))
          ;;; computation definition
          (define-syntax-parser name
            [_:id (syntax-property*
                   #''name
                   'type
-                  #'(Pi ([p*.name : p*.ty] ...) return-type))]
+                  #'(Pi ([p*.name : p*.ty] ...) ret-ty))]
            [clause*.pat #'clause*.expr] ...)))])

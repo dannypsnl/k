@@ -10,17 +10,18 @@
       [refl : (≡ A a a)])
 
 #|
+Congruence
+
 TODO:
 1. `cong` is not definable now, since our implementation didn't treat `f` as a procedure now
 2. `A`, `B`, `x`, `y`, `z` should no need pattern(implicit)
+(def (cong {A B : Type}
+           [f : (Pi ([x : A]) B)]
+           [x y : A]
+           [P : (≡ x y)])
+  : (≡ (f x) (f y))
+  [A B f x y refl => refl])
 |#
-; Congruence
-#;(def (cong {A B : Type}
-             [f : (Pi ([x : A]) B)]
-             [x y : A]
-             [P : (≡ x y)])
-    : (≡ (f x) (f y))
-    [A B f x y refl => refl])
 
 ; Symmetry
 (def (symm {A : Type}
@@ -30,7 +31,7 @@ TODO:
   [A x y refl => refl])
 
 ; Transitivity
-#;(def (trans {A : Type}
+(def (trans {A : Type}
             [x y z : A]
             [p : (≡ x y)]
             [q : (≡ y z)])
